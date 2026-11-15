@@ -26,5 +26,17 @@
   "blaze": {
     "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/BLAZE.png",
     "sha256": "78b34f97e4d09b3cd6b260e417cd49c9c9373baf78d0c3d3027803c7ddfb8d9a"
+  },
+  "fox": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/FOX.png",
+    "sha256": "a011c2cbcc46d027853db7fcdc81a4f8963020de144c7325e1489f1342bfe6ad"
+  },
+  "shulker": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/SHULKER.png",
+    "sha256": "0fe8f8ab20951727e247efc28d976f213e0f5eda51db5a6a2ddba577b4800609"
+  },
+  "dolphin": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/DOLPHIN.png",
+    "sha256": "9f2e4a7b7c05f06a639a676aa9ed37eec736ed562ceebc12abe8bc056d944ac6"
   }
 }

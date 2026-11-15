@@ -178,7 +178,9 @@ footer {
   border: 1px solid var(--border-strong);
   border-radius: 12px;
   box-shadow: 0 16px 40px #0007;
-  animation: menu-in 180ms ease-out;
+  transition: none;
+  animation: menu-in 180ms ease-out both;
+  backface-visibility: hidden;
 }
 .theme-menu > p {
   margin: 0 0 12px;
@@ -310,9 +312,22 @@ footer {
   right: max(-15px, calc((100vw - 1650px) / 2));
   animation-delay: -3s;
 }
-:root[data-theme='ocean'] .mob-axolotl {
+.mob-fox {
+  top: 18%;
+  left: max(-20px, calc((100vw - 1650px) / 2));
+  animation-delay: -2s;
+}
+.mob-shulker {
+  top: 26%;
+  right: max(-15px, calc((100vw - 1650px) / 2));
+  animation-delay: -4s;
+}
+.mob-dolphin {
   top: 20%;
-  bottom: auto;
+  right: 5%;
+  width: 180px;
+  height: 150px;
+  animation-delay: -3s;
 }
 .graph,
 .compact-graph {
@@ -406,11 +421,11 @@ button.compact-node:active,
 @keyframes menu-in {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translate3d(0, 6px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 @keyframes step-in {
@@ -476,6 +491,20 @@ button.compact-node:active,
   .mob-axolotl {
     right: -20px;
   }
+}
+
+/* Avoid rotating pixel textures and animating large shadows on touch devices. */
+@media (pointer: coarse) {
+  .background-mob {
+    animation-name: mob-drift;
+  }
+  .theme-menu {
+    box-shadow: 0 8px 24px #0005;
+  }
+}
+@keyframes mob-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -10px, 0); }
 }
 
 /* The setting and the operating-system preference both stop motion. */

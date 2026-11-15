@@ -74,14 +74,29 @@ await tick();
 check(workerStarts === 1, 'Show my steps starts the optimizer');
 check($('#safety-badge').textContent.includes('Survival safe'), 'Requested helmet plan');
 const totalBeforeTheme = $('#stat-total').textContent;
+let popupReveals = 0;
+const themeMenu = $('.theme-menu');
+const originalAnimate = themeMenu.animate.bind(themeMenu);
+themeMenu.animate = (...args) => {
+  popupReveals++;
+  return originalAnimate(...args);
+};
+for (let i = 0; i < 3; i++) {
+  $('#theme-picker').open = true;
+  await tick();
+  $('#theme-picker').open = false;
+  await tick();
+}
+check(popupReveals === 0, 'Theme popup uses one CSS entrance, without a competing JS animation');
+themeMenu.animate = originalAnimate;
 for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   $('#theme-picker').open = true;
   click(`[data-theme-choice="${theme}"]`);
   check(document.documentElement.dataset.theme === theme, `${theme}: selected theme applied`);
   const mobs = {
-    forest: ['bee', 'creeper'],
-    amethyst: ['enderman'],
-    ocean: ['axolotl'],
+    forest: ['fox'],
+    amethyst: ['shulker'],
+    ocean: ['dolphin'],
     ember: ['blaze'],
     overworld: ['axolotl', 'bee', 'creeper', 'enderman', 'skeleton', 'zombie'],
   };
@@ -100,13 +115,21 @@ for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   check(!$('#theme-picker').open, `${theme}: picker closes after choosing`);
 }
 check(
-  document.querySelectorAll('.background-mob[src]').length === 7,
-  'Theme scenes load all seven local images'
+  document.querySelectorAll('.background-mob[src]').length === 10,
+  'Theme scenes load all ten local images'
 );
 check(
   document.querySelector('.world-background').getAttribute('aria-hidden') === 'true',
   'Mobs are decorative'
 );
+for (let i = 0; i < 3; i++) {
+  click('[data-theme-choice="ocean"]');
+  click('[data-theme-choice="ember"]');
+}
+check(!$('.mob-dolphin').classList.contains('is-visible'), 'Rapid theme changes hide the outgoing ocean mob');
+check($('.mob-blaze').classList.contains('is-visible'), 'Rapid theme changes keep the final scene');
+check(!$('.mob-axolotl').classList.contains('is-visible'), 'Overworld axolotl stays out of the colour themes');
+click('[data-theme-choice="forest"]');
 click('#theme-motion');
 check(document.documentElement.dataset.motion === 'off', 'Animation toggle stops motion');
 const { reveal } = await import('../dist/motion.js');

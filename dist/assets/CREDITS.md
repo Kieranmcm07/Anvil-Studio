@@ -33,7 +33,7 @@ The anvil and grass-block interface icons are native inventory renders from
 `271a000189e86e101a1361af6d4266f6201ff726`. Other interface icons use the original
 Java 26.3 item textures from mcmeta, listed in `items/sources.json`.
 
-The creeper, bee, enderman, zombie, axolotl, skeleton and blaze are native Minecraft renders
+The creeper, bee, enderman, zombie, axolotl, skeleton, blaze, fox, shulker and dolphin are native Minecraft renders
 from [Owen1212055/mc-assets](https://github.com/Owen1212055/mc-assets), pinned to commit
 `271a000189e86e101a1361af6d4266f6201ff726`. The PNG files are unmodified; CSS controls
 their size, opacity and movement. They are decorative and do not determine the

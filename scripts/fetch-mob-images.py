@@ -7,7 +7,7 @@ from urllib.request import urlopen
 ROOT = Path(__file__).resolve().parents[1] / 'dist' / 'assets' / 'mobs'
 BASE = ('https://raw.githubusercontent.com/Owen1212055/mc-assets/'
         '271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/')
-MOBS = ['creeper', 'bee', 'enderman', 'zombie', 'axolotl', 'skeleton', 'blaze']
+MOBS = ['creeper', 'bee', 'enderman', 'zombie', 'axolotl', 'skeleton', 'blaze', 'fox', 'shulker', 'dolphin']
 
 if __name__ == '__main__':
     ROOT.mkdir(parents=True, exist_ok=True)

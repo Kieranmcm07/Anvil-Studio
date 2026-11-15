@@ -151,7 +151,7 @@ button.compact-node:hover {
   white-space: nowrap;
 }
 .theme-menu {
-  max-height: min(540px, 75dvh);
+  max-height: min(540px, 75svh);
   overflow-y: auto;
 }
 .topbar {
@@ -446,8 +446,26 @@ dialog {
   .enchant-heading h3 {
     font-size: 14px;
   }
+  .enchant-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
   .enchant-name {
+    min-width: 0;
     font-size: 14px;
+  }
+  .selection-dot {
+    flex-shrink: 0;
+  }
+  .level-buttons {
+    justify-self: end;
+    align-self: center;
+  }
+  .book-uses,
+  .book-origin {
+    grid-column: 1 / -1;
   }
   .level-buttons button {
     width: 40px;
@@ -517,6 +535,17 @@ dialog {
     right: -20px;
     bottom: 5%;
   }
+  .mob-fox {
+    top: 18svh;
+    left: -20px;
+  }
+  .mob-shulker,
+  .mob-dolphin {
+    top: 22svh;
+    right: -16px;
+    width: 110px;
+    height: 150px;
+  }
   .mob-zombie,
   .mob-skeleton {
     display: none;
@@ -539,11 +568,11 @@ dialog {
 }
 @media (max-width: 380px) {
   .enchant-row {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
   .level-buttons {
-    align-self: flex-end;
+    justify-self: end;
   }
   .two-fields {
     grid-template-columns: minmax(0, 1fr);
@@ -576,7 +605,7 @@ dialog {
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .theme-menu {
-    max-height: 65dvh;
+    max-height: 65svh;
   }
   .graph {
     height: 300px;

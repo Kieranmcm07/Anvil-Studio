@@ -28,6 +28,8 @@ export function setupMotion() {
     'toggle',
     (event) => {
       if (event.target.tagName !== 'DETAILS' || !event.target.open) return;
+      // The theme menu has its own CSS entrance; don't restart it with a second animation.
+      if (event.target.id === 'theme-picker') return;
       for (const child of event.target.children) {
         if (child.tagName !== 'SUMMARY') reveal(child);
       }

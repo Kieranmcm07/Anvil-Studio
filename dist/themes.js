@@ -1,9 +1,9 @@
 const STORAGE_KEY = 'anvil-studio-appearance';
 export const THEMES = ['forest', 'amethyst', 'ocean', 'ember', 'overworld'];
 const themeMobs = {
-  forest: ['creeper', 'bee'],
-  amethyst: ['enderman'],
-  ocean: ['axolotl'],
+  forest: ['fox'],
+  amethyst: ['shulker'],
+  ocean: ['dolphin'],
   ember: ['blaze'],
   overworld: ['creeper', 'bee', 'enderman', 'zombie', 'axolotl', 'skeleton'],
 };
@@ -71,7 +71,7 @@ export function setupThemes() {
     apply();
     save();
     picker.open = false;
-    picker.querySelector('summary').focus();
+    picker.querySelector('summary').focus({ preventScroll: true });
   });
   motionControl.addEventListener('change', () => {
     appearance.motion = motionControl.checked;
@@ -85,7 +85,7 @@ export function setupThemes() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && picker.open) {
       picker.open = false;
-      picker.querySelector('summary').focus();
+      picker.querySelector('summary').focus({ preventScroll: true });
     }
   });
   apply();
