@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="151" height="32" viewBox="0 0 151 32" role="img" aria-label="CODE LICENSE MIT">
+  <title>CODE LICENSE MIT</title>
+  <defs><clipPath id="badge"><rect width="151" height="32" rx="4"/></clipPath></defs>
+  <g clip-path="url(#badge)">
+    <rect width="151" height="32" fill="#151b16"/>
+    <rect x="106" width="45" height="32" fill="#b6ed86"/>
+  </g>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing=".8" text-anchor="middle">
+    <text x="53.0" y="20" fill="#e7eee1">CODE LICENSE</text>
+    <text x="128.5" y="20" fill="#172015">MIT</text>
+  </g>
+</svg>

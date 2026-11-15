@@ -1,0 +1,29 @@
+{
+  "name": "anvil-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Find the cheapest Minecraft enchantment order for Java and Bedrock, with clear anvil steps, a combining graph and custom themes.",
+  "author": "Kieranmcm07",
+  "license": "MIT",
+  "keywords": [
+    "minecraft",
+    "minecraft-java-edition",
+    "minecraft-bedrock-edition",
+    "enchantment-calculator",
+    "anvil",
+    "survival",
+    "optimization",
+    "javascript",
+    "vanilla-javascript",
+    "cloudflare-pages"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:ui": "node scripts/check-ui.mjs",
+    "start": "python serve.py"
+  },
+  "devDependencies": {
+    "happy-dom": "21.0.4"
+  }
+}

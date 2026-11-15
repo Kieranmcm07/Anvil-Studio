@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="206" height="32" viewBox="0 0 206 32" role="img" aria-label="MINECRAFT JAVA &amp; BEDROCK">
+  <title>MINECRAFT JAVA &amp; BEDROCK</title>
+  <defs><clipPath id="badge"><rect width="206" height="32" rx="4"/></clipPath></defs>
+  <g clip-path="url(#badge)">
+    <rect width="206" height="32" fill="#151b16"/>
+    <rect x="86" width="120" height="32" fill="#b6ed86"/>
+  </g>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing=".8" text-anchor="middle">
+    <text x="43.0" y="20" fill="#e7eee1">MINECRAFT</text>
+    <text x="146.0" y="20" fill="#172015">JAVA &amp; BEDROCK</text>
+  </g>
+</svg>

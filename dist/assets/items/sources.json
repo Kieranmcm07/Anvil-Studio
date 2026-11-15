@@ -1,0 +1,122 @@
+{
+  "diamond_helmet": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_helmet.png",
+    "sha256": "d95286bd20f5f444dd98d0e13cd8f5e89d6af458819537e3ff408d64153c5f0a"
+  },
+  "diamond_chestplate": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_chestplate.png",
+    "sha256": "930e7f139508543a66fa9335de1dcf1df910b27a325799f2a420fb0d1cc28359"
+  },
+  "diamond_leggings": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_leggings.png",
+    "sha256": "08ba1f85219d7fa96dca3cc7024ec5edea25d484d5874e712a6faa4fe15eb757"
+  },
+  "diamond_boots": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_boots.png",
+    "sha256": "8714f58c2a03425c38118646f6ecaf7a97a1b3b4b72d4ac8171f09249e6dd465"
+  },
+  "diamond_sword": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_sword.png",
+    "sha256": "5634a8cb79a70beb306210de9ec492fc2d4dc8f739372683e9882ef06bf63008"
+  },
+  "diamond_axe": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_axe.png",
+    "sha256": "c40234807156fa36f370037f93939c397be76672c2d55b20fb3026d04df97155"
+  },
+  "diamond_pickaxe": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_pickaxe.png",
+    "sha256": "dfec8e1467b335133521a42c8fde0f124ba7b5c45c0a84fba789736df4f92325"
+  },
+  "diamond_shovel": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_shovel.png",
+    "sha256": "810c79864c331d43c8a6d0c4e9866f91813a5a9602cb97b2a7f6e22bf4448f96"
+  },
+  "diamond_hoe": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_hoe.png",
+    "sha256": "5cb26dd2b299d0cd99bda9e70e222618750233f0a10ecca0896234ce4998bc75"
+  },
+  "bow": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/bow.png",
+    "sha256": "1e2cb18545e4ed9286e1120686c3f835d6619b8bd853970f1011163b68426a54"
+  },
+  "crossbow_standby": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/crossbow_standby.png",
+    "sha256": "6ea28ffcdf20314406cfaddcf9c1684523ff27211a482e6a709c2bd4543bb468"
+  },
+  "trident": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/trident.png",
+    "sha256": "2bb1397727939c03c0c5c87307e91b41246e8ffd1b0ceddd73c7cc40bb9cf19d"
+  },
+  "mace": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/mace.png",
+    "sha256": "389119cde42a517b1bb217a9baa216285babfa9f3d8718e05b8b98a5349a45b1"
+  },
+  "diamond_spear": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/diamond_spear.png",
+    "sha256": "fa6c967027edcae3bc31a6d81c6d4e846833f21f641a34aef6f9f68895ea5cfb"
+  },
+  "elytra": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/elytra.png",
+    "sha256": "7a83137eea9fd1e1eb75906cb573a277a90cc0796e2aa2a04d0605abc5b21717"
+  },
+  "shield": {
+    "source": "https://raw.githubusercontent.com/TinyTank800/MinecraftAllImages/8888a461f088c6b907f13c14f25a12d90a481ae3/public/images-v2/26.2/shield.png",
+    "sha256": "57482fb4f69102b3e9a5c28338b994e51e94d31bb5e3bc353735f6f24c5c1c87"
+  },
+  "fishing_rod": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/fishing_rod.png",
+    "sha256": "eaf66dce8f2dfccdc95c8b2c8df7d715bb4a337dfa250a227a9eb58b73b0602c"
+  },
+  "shears": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/shears.png",
+    "sha256": "a9570cdb8be3b5c96d4be6b832cd17ab9cfdf731ce213b25e31199940091c56d"
+  },
+  "flint_and_steel": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/flint_and_steel.png",
+    "sha256": "cdbc36ffa84370d0ec6cd3d09d0b2d51b4efce411537aeb1619137b3ba723c5e"
+  },
+  "carrot_on_a_stick": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/carrot_on_a_stick.png",
+    "sha256": "a1477ac3abf72fdd78f0940d20cf0700e23aaf987960f3cce2f47ceede043fcd"
+  },
+  "warped_fungus_on_a_stick": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/warped_fungus_on_a_stick.png",
+    "sha256": "d89de095c5d0ff3466030ac770583f4fc6739d451bae99b189f9ef44454fd013"
+  },
+  "enchanted_book": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/enchanted_book.png",
+    "sha256": "f96da147fcf6f373df00ab5181043ea0c76af4ba7025f43f377f678ac466fb43"
+  },
+  "anvil": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/item-assets/ANVIL.png",
+    "sha256": "cac69cd2cf3d84e4e665c0297c0635f0d561f042fedcbc2f64ffe870ab883b3c"
+  },
+  "grass_block": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/item-assets/GRASS_BLOCK.png",
+    "sha256": "d3dc531f301f4ef39141c0a1878512c88104d03519c17992e02ee67496f86f4d"
+  },
+  "experience_bottle": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/experience_bottle.png",
+    "sha256": "bf824bc91dc620010fed8c7ae9da9f91d4ce7910317b1a056029fd2dad4b3a8c"
+  },
+  "paper": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/paper.png",
+    "sha256": "046228bbea6334f90e915ea62c6b4050016a6b1aa575734d630a10688d9b11e7"
+  },
+  "emerald": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/emerald.png",
+    "sha256": "7aa1f12ee48666b2c3ae56fd9884ee95bf315795bfd1fd6e4ac3d3811ae3aacb"
+  },
+  "amethyst_shard": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/amethyst_shard.png",
+    "sha256": "dc64feb12d553ec59b819534ae57b46e99ac95a3ab61cb71de317a5d7b857584"
+  },
+  "prismarine_crystals": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/prismarine_crystals.png",
+    "sha256": "f54d54e1fe0886c6a942f8416b7083902630889e6043be4c0fce19f31f4d9452"
+  },
+  "blaze_powder": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/blaze_powder.png",
+    "sha256": "b2be09a066cf44cb126744fc25625fba75d3c3c33893c80cda4303ea9e432e7b"
+  }
+}

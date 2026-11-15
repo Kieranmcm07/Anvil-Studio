@@ -1,0 +1,26 @@
+{
+  "creeper": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/CREEPER.png",
+    "sha256": "64c36bfc068637952160fa1f44079e177cda9beb5b82350504ff2578fbcfd2c5"
+  },
+  "bee": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/BEE.png",
+    "sha256": "242dbeec47b45bf1ff3a97da154a2a20d70bdc6407ab55fb5671cec76a217068"
+  },
+  "enderman": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/ENDERMAN.png",
+    "sha256": "e093bba09bc9a1c10e64b7fc0eaf5f4d15f5a5838e9bb3ba37c45ced92609061"
+  },
+  "zombie": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/ZOMBIE.png",
+    "sha256": "40d959dfe2bd0614ab5e00788d811035bddb2dedc643ece94f6041ad67288eda"
+  },
+  "axolotl": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/AXOLOTL.png",
+    "sha256": "01c0449469da4b56c6e934aef58afacd5aaf2e6ea96c99ebe1f6f2f5f1533579"
+  },
+  "skeleton": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/SKELETON.png",
+    "sha256": "c38a9b277a340252ee3e27a7d4db4bb65683756b1cf232df87afd95ea4ee687c"
+  }
+}

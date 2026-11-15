@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101413" />
+    <meta
+      name="description"
+      content="Find a cheaper order for your Minecraft enchantments. Anvil steps and costs for Java and Bedrock, with an optional combining graph."
+    />
+    <title>Anvil Studio · Minecraft enchantment order</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./themes.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="world-background" aria-hidden="true">
+      <div class="world-glow"></div>
+      <img
+        class="background-mob mob-creeper"
+        data-mob-src="./assets/mobs/creeper.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-bee"
+        data-mob-src="./assets/mobs/bee.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-enderman"
+        data-mob-src="./assets/mobs/enderman.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-zombie"
+        data-mob-src="./assets/mobs/zombie.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-axolotl"
+        data-mob-src="./assets/mobs/axolotl.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-skeleton"
+        data-mob-src="./assets/mobs/skeleton.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+    </div>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Anvil Studio home"
+        ><svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M3 7h26v6l-7 4v5h4v4H7v-4h4v-5l-8-4z" /></svg
+        ><span
+          >anvil<span class="brand-light">studio</span><small>ENCHANTMENT PLANNER</small></span
+        ></a
+      >
+      <div class="header-right">
+        <a id="repository-link" class="text-button" target="_blank" rel="noreferrer" hidden
+          >View source on GitHub ↗</a
+        >
+        <button id="help-button" class="text-button item-label">
+          <img class="ui-item" src="./assets/items/enchanted_book.png" alt="" width="20" height="20" />How it works
+        </button>
+        <details id="theme-picker" class="theme-picker">
+          <summary><span class="theme-indicator" aria-hidden="true"></span>Theme</summary>
+          <div class="theme-menu">
+            <p>Pick your colours</p>
+            <div class="theme-choices" role="group" aria-label="Colour theme">
+              <button data-theme-choice="forest" aria-pressed="true">
+                <img class="ui-item" src="./assets/items/emerald.png" alt="" width="20" height="20" />Forest
+              </button>
+              <button data-theme-choice="amethyst" aria-pressed="false">
+                <img class="ui-item" src="./assets/items/amethyst_shard.png" alt="" width="20" height="20" />Amethyst
+              </button>
+              <button data-theme-choice="ocean" aria-pressed="false">
+                <img class="ui-item" src="./assets/items/prismarine_crystals.png" alt="" width="20" height="20" />Ocean
+              </button>
+              <button data-theme-choice="ember" aria-pressed="false">
+                <img class="ui-item" src="./assets/items/blaze_powder.png" alt="" width="20" height="20" />Ember
+              </button>
+              <button data-theme-choice="overworld" aria-pressed="false">
+                <img class="ui-item" src="./assets/items/grass_block.png" alt="" width="20" height="20" />
+                <span>Overworld<small>With a few familiar faces</small></span>
+              </button>
+            </div>
+            <label class="motion-toggle"
+              ><input id="theme-motion" type="checkbox" checked />Animations</label
+            >
+            <small id="reduced-motion-note" hidden>Your device has reduced motion turned on.</small>
+          </div>
+        </details>
+      </div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <h1>Get your enchantments <span>in order.</span></h1>
+          <p>Choose what you want on your gear. Find the cheapest way to put it together.</p>
+        </div>
+      </section>
+      <div class="workspace">
+        <aside class="setup panel" aria-label="Configure your enchantments">
+          <div class="panel-heading">
+            <div>
+              <h2>Choose your gear</h2>
+            </div>
+            <button id="reset" class="text-button muted">Reset</button>
+          </div>
+          <div class="edition-toggle" role="group" aria-label="Minecraft edition">
+            <button data-edition="java" class="active" aria-pressed="true">Java Edition</button
+            ><button data-edition="bedrock" aria-pressed="false">Bedrock Edition</button>
+          </div>
+          <div class="two-fields">
+            <label>GAME VERSION<select id="version"></select></label
+            ><label>EQUIPMENT<select id="item"></select></label>
+          </div>
+          <div id="version-note" class="version-note" hidden></div>
+          <div class="gear-preview">
+            <div id="gear-icon" class="gear-icon"></div>
+            <div>
+              <h3 id="gear-name">Helmet</h3>
+              <span id="gear-summary">Choose your enchantments</span>
+            </div>
+          </div>
+          <div id="enchant-heading" class="enchant-heading">
+            <h3 class="item-label">
+              <img class="ui-item" src="./assets/items/enchanted_book.png" alt="" width="20" height="20" />
+              Enchantments <span id="selection-count">0</span>
+            </h3>
+            <button id="preset" class="text-button mint">Recommended</button>
+          </div>
+          <label id="enchant-search" class="search"
+            ><span aria-hidden="true">⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Find an enchantment…"
+              aria-label="Find an enchantment"
+            /><kbd>/</kbd></label
+          >
+          <div id="enchantments" class="enchantment-list"></div>
+          <div id="list-hint" class="list-hint">
+            Click a level to add it. Click again to remove.
+          </div>
+          <button id="calculate" class="primary-button">
+            <span>Show my steps</span>
+            <img class="ui-item" src="./assets/items/anvil.png" alt="" width="28" height="28" />
+          </button>
+          <details id="advanced" class="advanced">
+            <summary>More options <span>+</span></summary>
+            <div class="advanced-content">
+              <label class="objective-label"
+                >Optimize for<select id="objective">
+                  <option value="levels">Fewest total levels</option>
+                  <option value="xp">Least XP · recharge from level 0</option>
+                  <option value="penalty">Lowest final work penalty</option>
+                </select></label
+              >
+              <label class="check-label"
+                ><input id="show-curses" type="checkbox" /> Show curses</label
+              >
+              <label class="inline-label"
+                >Item prior-work count
+                <input id="item-uses" type="number" min="0" max="6" value="0"
+              /></label>
+              <p>
+                Use 0 for untouched gear. After combining two inputs, the result’s count is
+                max(left, right) + 1. Renaming alone doesn’t count.
+              </p>
+              <label class="check-label"
+                ><input id="book-history" type="checkbox" /> Set each book’s prior-work count</label
+              >
+              <label class="check-label"
+                ><input id="more-ten" type="checkbox" /> Allow more than 10 enchantments (up to
+                13)</label
+              >
+              <label class="check-label"
+                ><input id="incompatible" type="checkbox" /> Allow incompatible enchantments</label
+              >
+              <p>
+                Incompatible combinations are theoretical and require commands or mods. Historical
+                exceptions are applied automatically.
+              </p>
+            </div>
+          </details>
+        </aside>
+        <section class="results" aria-label="Enchantment plan" aria-live="polite">
+          <div class="result-heading">
+            <div>
+              <h2 id="result-title">Your enchanting steps</h2>
+            </div>
+            <span id="safety-badge" class="status-badge" hidden></span>
+          </div>
+          <div id="notice" class="notice" role="status" hidden></div>
+          <p id="preparation-note" class="plan-preparation" hidden></p>
+          <div id="stats" class="stats">
+            <div>
+              <span class="item-label"><img class="ui-item" src="./assets/items/experience_bottle.png" alt="" width="20" height="20" />Plan cost</span>
+              <strong id="stat-total">—</strong>
+            </div>
+            <div><span>Highest step</span><strong id="stat-peak">—</strong></div>
+            <div>
+              <span class="item-label"><img class="ui-item" src="./assets/items/anvil.png" alt="" width="20" height="20" />Steps</span>
+              <strong id="stat-steps">—</strong>
+            </div>
+          </div>
+          <div class="blueprint panel">
+            <div id="blueprint-toolbar" class="blueprint-toolbar">
+              <div class="view-tabs" role="group" aria-label="Plan view">
+                <button id="steps-tab" class="active" aria-pressed="true">
+                  <span>Step by step</span>
+                </button>
+                <button id="flow-tab" aria-pressed="false"><span>View graph</span></button>
+              </div>
+              <button id="export" class="text-button item-label" disabled>
+                <img class="ui-item" src="./assets/items/paper.png" alt="" width="20" height="20" />Export plan
+              </button>
+            </div>
+            <div id="flow-view" hidden>
+              <div class="graph-caption">
+                <span
+                  ><i class="legend-dot"></i>Equipment <i class="legend-dot purple"></i>Enchanted
+                  books</span
+                ><span>Click a step for details</span>
+              </div>
+              <div id="graph" class="graph">
+                <div class="empty-state">
+                  <img class="item-sprite" src="./assets/items/anvil.png" alt="" width="56" height="56" />
+                  <h3>No plan yet</h3>
+                  <p>Choose your enchantments, then click “Show my steps”.</p>
+                </div>
+              </div>
+              <div class="graph-bottom">
+                <span>LEFT SLOT + RIGHT SLOT → RESULT</span>
+                <div>
+                  <button id="zoom-out" aria-label="Zoom out">−</button
+                  ><button id="zoom-fit" aria-label="Fit flowchart">Fit</button
+                  ><button id="zoom-in" aria-label="Zoom in">+</button>
+                </div>
+              </div>
+            </div>
+            <div id="steps-view" class="steps-view">
+              <div class="empty-state">
+                <img class="item-sprite" src="./assets/items/anvil.png" alt="" width="56" height="56" />
+                <h3>No plan yet</h3>
+                <p>Choose your enchantments, then click “Show my steps”.</p>
+              </div>
+            </div>
+            <div id="step-detail" class="step-detail" hidden></div>
+          </div>
+          <details id="plan-details" class="plan-details" hidden>
+            <summary>Costs & assumptions</summary>
+            <p id="peak-note">Each step must cost fewer than 40 levels.</p>
+            <p id="penalty-note">Final work penalty: —</p>
+            <p id="plan-footnote" class="plan-footnote">
+              Start with one unenchanted item and one separate book for each enchantment, already at
+              the selected level.
+            </p>
+          </details>
+        </section>
+      </div>
+    </main>
+    <footer>
+      <span class="creator-credit"
+        >Made by <a id="creator-link" target="_blank" rel="noreferrer">Kieranmcm07</a
+        ><span class="footer-dot">·</span
+        ><a id="projects-link" target="_blank" rel="noreferrer">More projects on GitHub ↗</a></span
+      ><span
+        >Unofficial Minecraft tool <span class="footer-dot">·</span>
+        <button id="sources-button" class="text-button">Rules & sources ↗</button></span
+      >
+    </footer>
+    <dialog id="help">
+      <div class="dialog-header">
+        <span class="eyebrow">ANVIL STUDIO</span
+        ><button id="close-help" class="icon-button" aria-label="Close help">×</button>
+      </div>
+      <h2>How to use the planner</h2>
+      <p>
+        Choose your edition, version and equipment. Each selected enchantment represents
+        <strong>one separate book already at that level</strong>. Your base item starts unenchanted;
+        set its prior-work count if it has been repaired before.
+      </p>
+      <h3>How the costs work</h3>
+      <p>
+        Each operation adds both inputs’ prior-work penalties to the cost of transferring the right
+        book’s enchantments. The penalty is 2<sup>n</sup> − 1, where n is the prior-work count.
+        Survival accepts costs up to 39 levels.
+      </p>
+      <h3>Levels and XP are different</h3>
+      <p>
+        “Fewest total levels” minimizes the sum of the displayed anvil costs. “Least XP” assumes you
+        earn exactly the required levels from level 0 before each operation and spend them back to
+        0. It is not a quote for spending from an existing high-level XP bar.
+      </p>
+      <h3>What this planner covers</h3>
+      <p>
+        Exact ordering for up to 13 distinct enchanted books. It does not combine duplicate
+        lower-level books, import already-enchanted equipment, repair durability, or rename items.
+        Enchantment availability, conflicts and book costs follow the selected profile. Bedrock has
+        no Sweeping Edge and uses a lower Impaling book multiplier.
+      </p>
+      <h3>Making a Wind Burst book</h3>
+      <p>
+        Wind Burst drops at level I. For level II, combine two level-I books. For level III, make
+        two level-II books and combine them. That takes four level-I books in total. Make this book
+        before following the plan: the displayed total excludes those preparation steps, but the
+        later costs include the finished book’s prior-work penalty.
+      </p>
+      <p>
+        Java 1.14 through 1.14.3 pre-release 1 allows stacked protection. Java 1.9–1.11 allows
+        Mending with Infinity; 1.11.1 requires Infinity on the left when adding Mending. These rules
+        are separate from the incompatible-enchantments override.
+      </p>
+      <h3>Rules & data sources</h3>
+      <ul>
+        <li>
+          <a href="./assets/CREDITS.md" target="_blank" rel="noreferrer"
+            >Original Minecraft item artwork · sources and credits ↗</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3"
+            target="_blank"
+            rel="noreferrer"
+            >Mojang · Java 26.3 release notes ↗</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://github.com/misode/mcmeta/tree/26.3-data/data/minecraft/enchantment"
+            target="_blank"
+            rel="noreferrer"
+            >Version-pinned vanilla enchantment data (26.3) ↗</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://learn.microsoft.com/en-us/minecraft/creator/documents/introtoenchantments"
+            target="_blank"
+            rel="noreferrer"
+            >Microsoft · Bedrock enchantments ↗</a
+          >
+        </li>
+        <li>
+          <a href="https://minecraft.wiki/w/Anvil_mechanics" target="_blank" rel="noreferrer"
+            >Minecraft Wiki · Anvil mechanics and edition differences ↗</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-3"
+            target="_blank"
+            rel="noreferrer"
+            >Mojang · 1.14.3 protection compatibility change ↗</a
+          >
+        </li>
+      </ul>
+      <p class="muted">
+        Java 26.3 and Bedrock 26.3 are separate releases. No accounts or network connection are
+        needed after loading. Saved selections stay in this browser. Not affiliated with Mojang or
+        Microsoft.
+      </p>
+    </dialog>
+    <noscript>This calculator needs JavaScript enabled in your browser.</noscript>
+  </body>
+</html>

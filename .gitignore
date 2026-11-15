@@ -1,0 +1,6 @@
+__pycache__/
+node_modules/
+*.log
+*.tar.gz
+.DS_Store
+Thumbs.db
