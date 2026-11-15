@@ -12,6 +12,7 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./themes.css" />
+    <link rel="stylesheet" href="./responsive.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
@@ -19,6 +20,7 @@
       <div class="world-glow"></div>
       <img
         class="background-mob mob-creeper"
+        data-mob="creeper"
         data-mob-src="./assets/mobs/creeper.png"
         alt=""
         width="256"
@@ -26,6 +28,7 @@
       />
       <img
         class="background-mob mob-bee"
+        data-mob="bee"
         data-mob-src="./assets/mobs/bee.png"
         alt=""
         width="256"
@@ -33,6 +36,7 @@
       />
       <img
         class="background-mob mob-enderman"
+        data-mob="enderman"
         data-mob-src="./assets/mobs/enderman.png"
         alt=""
         width="256"
@@ -40,6 +44,7 @@
       />
       <img
         class="background-mob mob-zombie"
+        data-mob="zombie"
         data-mob-src="./assets/mobs/zombie.png"
         alt=""
         width="256"
@@ -47,6 +52,7 @@
       />
       <img
         class="background-mob mob-axolotl"
+        data-mob="axolotl"
         data-mob-src="./assets/mobs/axolotl.png"
         alt=""
         width="256"
@@ -54,7 +60,16 @@
       />
       <img
         class="background-mob mob-skeleton"
+        data-mob="skeleton"
         data-mob-src="./assets/mobs/skeleton.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-blaze"
+        data-mob="blaze"
+        data-mob-src="./assets/mobs/blaze.png"
         alt=""
         width="256"
         height="256"
@@ -70,10 +85,16 @@
       >
       <div class="header-right">
         <a id="repository-link" class="text-button" target="_blank" rel="noreferrer" hidden
-          >View source on GitHub ↗</a
+          >GitHub ↗</a
         >
         <button id="help-button" class="text-button item-label">
-          <img class="ui-item" src="./assets/items/enchanted_book.png" alt="" width="20" height="20" />How it works
+          <img
+            class="ui-item"
+            src="./assets/items/enchanted_book.png"
+            alt=""
+            width="20"
+            height="20"
+          />How it works
         </button>
         <details id="theme-picker" class="theme-picker">
           <summary><span class="theme-indicator" aria-hidden="true"></span>Theme</summary>
@@ -81,19 +102,49 @@
             <p>Pick your colours</p>
             <div class="theme-choices" role="group" aria-label="Colour theme">
               <button data-theme-choice="forest" aria-pressed="true">
-                <img class="ui-item" src="./assets/items/emerald.png" alt="" width="20" height="20" />Forest
+                <img
+                  class="ui-item"
+                  src="./assets/items/emerald.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Forest
               </button>
               <button data-theme-choice="amethyst" aria-pressed="false">
-                <img class="ui-item" src="./assets/items/amethyst_shard.png" alt="" width="20" height="20" />Amethyst
+                <img
+                  class="ui-item"
+                  src="./assets/items/amethyst_shard.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Amethyst
               </button>
               <button data-theme-choice="ocean" aria-pressed="false">
-                <img class="ui-item" src="./assets/items/prismarine_crystals.png" alt="" width="20" height="20" />Ocean
+                <img
+                  class="ui-item"
+                  src="./assets/items/prismarine_crystals.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Ocean
               </button>
               <button data-theme-choice="ember" aria-pressed="false">
-                <img class="ui-item" src="./assets/items/blaze_powder.png" alt="" width="20" height="20" />Ember
+                <img
+                  class="ui-item"
+                  src="./assets/items/blaze_powder.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Ember
               </button>
               <button data-theme-choice="overworld" aria-pressed="false">
-                <img class="ui-item" src="./assets/items/grass_block.png" alt="" width="20" height="20" />
+                <img
+                  class="ui-item"
+                  src="./assets/items/grass_block.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
                 <span>Overworld<small>With a few familiar faces</small></span>
               </button>
             </div>
@@ -138,7 +189,13 @@
           </div>
           <div id="enchant-heading" class="enchant-heading">
             <h3 class="item-label">
-              <img class="ui-item" src="./assets/items/enchanted_book.png" alt="" width="20" height="20" />
+              <img
+                class="ui-item"
+                src="./assets/items/enchanted_book.png"
+                alt=""
+                width="20"
+                height="20"
+              />
               Enchantments <span id="selection-count">0</span>
             </h3>
             <button id="preset" class="text-button mint">Recommended</button>
@@ -198,7 +255,7 @@
             </div>
           </details>
         </aside>
-        <section class="results" aria-label="Enchantment plan" aria-live="polite">
+        <section id="results" class="results" aria-label="Enchantment plan" aria-live="polite">
           <div class="result-heading">
             <div>
               <h2 id="result-title">Your enchanting steps</h2>
@@ -209,25 +266,71 @@
           <p id="preparation-note" class="plan-preparation" hidden></p>
           <div id="stats" class="stats">
             <div>
-              <span class="item-label"><img class="ui-item" src="./assets/items/experience_bottle.png" alt="" width="20" height="20" />Plan cost</span>
+              <span class="item-label"
+                ><img
+                  class="ui-item"
+                  src="./assets/items/experience_bottle.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Plan cost</span
+              >
               <strong id="stat-total">—</strong>
             </div>
-            <div><span>Highest step</span><strong id="stat-peak">—</strong></div>
             <div>
-              <span class="item-label"><img class="ui-item" src="./assets/items/anvil.png" alt="" width="20" height="20" />Steps</span>
+              <span class="item-label"
+                ><img
+                  class="ui-item"
+                  src="./assets/items/redstone.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Highest step</span
+              ><strong id="stat-peak">—</strong>
+            </div>
+            <div>
+              <span class="item-label"
+                ><img
+                  class="ui-item"
+                  src="./assets/items/anvil.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Steps</span
+              >
               <strong id="stat-steps">—</strong>
             </div>
           </div>
-          <div class="blueprint panel">
+          <div class="blueprint panel" data-graph-mode="step">
             <div id="blueprint-toolbar" class="blueprint-toolbar">
               <div class="view-tabs" role="group" aria-label="Plan view">
                 <button id="steps-tab" class="active" aria-pressed="true">
-                  <span>Step by step</span>
+                  <img
+                    class="ui-item"
+                    src="./assets/items/book.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                  /><span>Step by step</span>
                 </button>
-                <button id="flow-tab" aria-pressed="false"><span>View graph</span></button>
+                <button id="flow-tab" aria-pressed="false">
+                  <img
+                    class="ui-item"
+                    src="./assets/items/compass_16.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                  /><span>View graph</span>
+                </button>
               </div>
               <button id="export" class="text-button item-label" disabled>
-                <img class="ui-item" src="./assets/items/paper.png" alt="" width="20" height="20" />Export plan
+                <img
+                  class="ui-item"
+                  src="./assets/items/paper.png"
+                  alt=""
+                  width="20"
+                  height="20"
+                />Export plan
               </button>
             </div>
             <div id="flow-view" hidden>
@@ -237,16 +340,30 @@
                   books</span
                 ><span>Click a step for details</span>
               </div>
-              <div id="graph" class="graph">
+              <div id="compact-graph" class="compact-graph"></div>
+              <div
+                id="graph"
+                class="graph"
+                tabindex="0"
+                role="region"
+                aria-label="Full combining tree. Scroll to explore, or use the zoom controls."
+              >
                 <div class="empty-state">
-                  <img class="item-sprite" src="./assets/items/anvil.png" alt="" width="56" height="56" />
+                  <img
+                    class="item-sprite"
+                    src="./assets/items/anvil.png"
+                    alt=""
+                    width="56"
+                    height="56"
+                  />
                   <h3>No plan yet</h3>
                   <p>Choose your enchantments, then click “Show my steps”.</p>
                 </div>
               </div>
               <div class="graph-bottom">
-                <span>LEFT SLOT + RIGHT SLOT → RESULT</span>
-                <div>
+                <span class="graph-hint">Scroll to explore · Select a step</span>
+                <button id="graph-mode" aria-pressed="false" hidden>Full tree</button>
+                <div class="graph-zoom">
                   <button id="zoom-out" aria-label="Zoom out">−</button
                   ><button id="zoom-fit" aria-label="Fit flowchart">Fit</button
                   ><button id="zoom-in" aria-label="Zoom in">+</button>
@@ -255,7 +372,13 @@
             </div>
             <div id="steps-view" class="steps-view">
               <div class="empty-state">
-                <img class="item-sprite" src="./assets/items/anvil.png" alt="" width="56" height="56" />
+                <img
+                  class="item-sprite"
+                  src="./assets/items/anvil.png"
+                  alt=""
+                  width="56"
+                  height="56"
+                />
                 <h3>No plan yet</h3>
                 <p>Choose your enchantments, then click “Show my steps”.</p>
               </div>
@@ -373,8 +496,8 @@
       </ul>
       <p class="muted">
         Java 26.3 and Bedrock 26.3 are separate releases. No accounts or network connection are
-        needed after loading. Saved selections stay in this browser. Not affiliated with Mojang or
-        Microsoft.
+        needed after loading. Your theme is saved in this browser. The planner starts fresh on each
+        visit. Not affiliated with Mojang or Microsoft.
       </p>
     </dialog>
     <noscript>This calculator needs JavaScript enabled in your browser.</noscript>

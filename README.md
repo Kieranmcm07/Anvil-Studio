@@ -35,6 +35,8 @@ No installation needed. Choose your gear and enchantments, then select
 
 Keep the left and right anvil slots as shown; swapping them can change the cost.
 Tick off steps as you go, switch to **View graph**, or export the plan as a text file.
+On a smaller screen, the graph shows one combine at a time. Use the arrows to move
+between steps, or choose **Full tree** to explore the whole plan.
 
 ## What it does
 
@@ -44,8 +46,9 @@ Tick off steps as you go, switch to **View graph**, or export the plan as a text
 - Handles conflicting enchantments and selected historical compatibility rules.
 - Offers recommended selections, search and settings for previous anvil work.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
-- Uses Minecraft item artwork, with mob backgrounds in the Overworld theme.
-- Saves your selections and appearance settings. Animations can be switched off.
+- Uses Minecraft item artwork, with animated mob backgrounds for each theme.
+- Adapts to phones and tablets, with a readable graph for each step and an optional full tree.
+- Remembers your theme and animation setting. Each visit starts with a fresh planner.
 
 The search supports up to 13 distinct books. Advanced options let you optimise
 for total levels, XP or the final prior-work penalty.
@@ -122,7 +125,7 @@ Mods, plugins and custom data packs may change the rules.
 | Location | Purpose |
 | --- | --- |
 | `dist/index.html` | Page layout and help text |
-| `dist/style.css`, `dist/themes.css` | Styling, colours and animations |
+| `dist/style.css`, `dist/responsive.css`, `dist/themes.css` | Layouts, colours and animations |
 | `dist/app.js`, `dist/plan-view.js` | Controls, results, graph and export |
 | `dist/data.js`, `dist/optimizer.js` | Version rules and calculation logic |
 | `dist/assets/` | Item images, mob images and credits |
@@ -131,8 +134,7 @@ Mods, plugins and custom data packs may change the rules.
 
 Edit the files and refresh the local preview to see your changes.
 
-Your GitHub links are in **`dist/config.js`**. Fill in `repositoryUrl` with your
-repository's address to show the source link in the website header.
+The GitHub links are in **`dist/config.js`**. Change them if you host your own fork.
 
 ## Tests
 

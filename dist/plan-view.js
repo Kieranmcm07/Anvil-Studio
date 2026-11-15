@@ -1,10 +1,12 @@
 import { itemName, itemIcon } from './data.js';
 import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
+import { reveal } from './motion.js';
 
 let result = null;
 let context = null;
 let zoom = 1;
+let fitGraph = false;
 let activeStep = 1;
 let currentView = 'steps';
 const completed = new Set();
@@ -13,8 +15,10 @@ export function showPlan(plan, settings) {
   result = plan;
   context = settings;
   zoom = 1;
+  fitGraph = false;
   activeStep = 1;
   completed.clear();
+  setGraphMode('step');
   renderResult();
 }
 
@@ -44,6 +48,10 @@ export function clearPlan() {
   </div>`;
   $('#steps-view').innerHTML = empty;
   $('#graph').innerHTML = empty;
+  $('#compact-graph').innerHTML = empty;
+  $('#graph-mode').hidden = true;
+  setGraphMode('step');
+  for (const id of ['zoom-in', 'zoom-out', 'zoom-fit']) $('#' + id).disabled = true;
   $('#export').disabled = true;
   setView('steps');
 }
@@ -117,6 +125,72 @@ function renderDetail() {
       ${leftPenalty} left penalty + ${rightPenalty} right penalty + ${enchantmentCost}
       enchantment cost = ${step.cost} levels. Result’s work penalty: ${penalty(step.uses)}.
     </p>`;
+  renderCompactGraph(step);
+  reveal($('#step-detail'));
+}
+
+function compactInput(node, label) {
+  const isGear = Boolean(node.mask & 1);
+  const fromStep = node.leaf === undefined;
+  const tag = fromStep ? 'button' : 'div';
+  return `<${tag} class="compact-node ${isGear ? 'gear-node' : 'book-node'}"
+    ${fromStep ? `type="button" data-step="${node.step}" aria-label="Go to step ${node.step}"` : ''}>
+    <small>${label}</small>
+    ${gearIcon(isGear ? context.item : 'enchanted_book')}
+    <strong>${escape(nodeTitle(node))}</strong>
+    <span>${fromStep ? 'View this earlier step ↗' : isGear ? 'Starting item' : 'Enchanted book'}</span>
+  </${tag}>`;
+}
+
+function renderCompactGraph(step) {
+  $('#compact-graph').innerHTML = `
+    <nav class="graph-step-nav" aria-label="Browse graph steps">
+      <button data-graph-prev aria-label="Previous graph step" ${activeStep === 1 ? 'disabled' : ''}>←</button>
+      <label><span class="sr-only">Graph step</span><select data-graph-select>
+        ${result.steps.map((s) => `<option value="${s.step}" ${s.step === activeStep ? 'selected' : ''}>Step ${s.step} of ${result.steps.length}</option>`).join('')}
+      </select></label>
+      <button data-graph-next aria-label="Next graph step" ${activeStep === result.steps.length ? 'disabled' : ''}>→</button>
+    </nav>
+    <div class="compact-inputs">
+      ${compactInput(step.left, 'LEFT SLOT')}
+      ${compactInput(step.right, 'RIGHT SLOT')}
+    </div>
+    <svg class="compact-connectors" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M75 0 V14 Q75 24 90 24 H135 Q150 24 150 36 V46"/>
+      <path class="book-connector" d="M225 0 V14 Q225 24 210 24 H165 Q150 24 150 36"/>
+      <path d="M144 40 L150 46 L156 40"/>
+    </svg>
+    <div class="compact-node compact-result">
+      ${gearIcon(step.mask & 1 ? context.item : 'enchanted_book')}
+      <div><small>RESULT · ${step.cost} LEVELS</small>
+        <strong>${step === result.root ? 'Finished ' : ''}${step.mask & 1 ? escape(itemName(context.item)) : 'Combined book'}</strong>
+        <span>${nodeEnchants(step).map(escape).join(' · ')}</span>
+      </div>
+    </div>`;
+  $('[data-graph-select]').value = String(activeStep);
+  reveal($('#compact-graph'));
+}
+
+function selectStep(number, focusControl) {
+  if (!result || !result.steps.some((step) => step.step === number)) return;
+  activeStep = number;
+  document.querySelectorAll('#flow-svg .node').forEach((node) => {
+    const selected = Number(node.dataset.step) === activeStep;
+    node.classList.toggle('selected', selected);
+    node.setAttribute('aria-pressed', selected);
+  });
+  renderDetail();
+  if (focusControl) {
+    const control = $('#compact-graph').querySelector(focusControl);
+    (control?.disabled ? $('[data-graph-select]') : control)?.focus({ preventScroll: true });
+  }
+}
+
+function setGraphMode(mode) {
+  $('.blueprint').dataset.graphMode = mode;
+  $('#graph-mode').textContent = mode === 'tree' ? 'One step' : 'Full tree';
+  $('#graph-mode').setAttribute('aria-pressed', mode === 'tree');
+  applyZoom();
 }
 
 function graphCard(node) {
@@ -136,7 +210,7 @@ function graphCard(node) {
   const attributes = combine
     ? `
     class="node ${node.step === activeStep ? 'selected' : ''}" data-step="${node.step}"
-    role="button" tabindex="0" aria-label="Step ${node.step}: ${node.cost} levels. ${escape(title)}"`
+    role="button" tabindex="0" aria-pressed="${node.step === activeStep}" aria-label="Step ${node.step}: ${node.cost} levels. ${escape(title)}"`
     : '';
   const icon = combine
     ? `
@@ -151,10 +225,10 @@ function graphCard(node) {
     <g transform="translate(${node.x},${node.y})" ${attributes}>
       <title>${escape(title)}</title>
       <rect class="node-bg ${combine ? 'merge-bg' : isGear ? '' : 'book-bg'}"
-        width="163" height="60" rx="7"/>
+        width="224" height="82" rx="7"/>
       ${icon}
-      <text x="34" y="23" class="graph-node-title" font-size="10" font-weight="500">${escape(shortTitle)}</text>
-      <text x="12" y="44" class="graph-node-subtitle" font-size="9">${escape(subtitle)}</text>
+      <text x="34" y="23" class="graph-node-title" font-size="13" font-weight="500">${escape(shortTitle)}</text>
+      <text x="12" y="60" class="graph-node-subtitle" font-size="12">${escape(subtitle)}</text>
     </g>`;
 }
 function renderGraph() {
@@ -164,30 +238,30 @@ function renderGraph() {
   function layout(node) {
     if (node.leaf !== undefined) {
       node.x = 12;
-      node.y = 14 + leaf++ * 83;
+      node.y = 14 + leaf++ * 108;
       node.depth = 0;
     } else {
       layout(node.left);
       layout(node.right);
       node.depth = Math.max(node.left.depth, node.right.depth) + 1;
-      node.x = 12 + node.depth * 207;
+      node.x = 12 + node.depth * 276;
       node.y = (node.left.y + node.right.y) / 2;
       edges.push([node.left, node], [node.right, node]);
     }
     nodes.push(node);
   }
   layout(result.root);
-  const width = result.root.x + 190,
-    height = Math.max(leaf * 83 + 10, 190);
+  const width = result.root.x + 248,
+    height = Math.max(leaf * 108 + 10, 190);
   const paths = edges
     .map(
       ([a, b]) =>
-        `<path class="flow-edge ${a.mask & 1 ? '' : 'book-edge'}" d="M${a.x + 163} ${a.y + 30} C${a.x + 185} ${a.y + 30},${b.x - 22} ${b.y + 30},${b.x} ${b.y + 30}"/><circle class="graph-junction" cx="${b.x}" cy="${b.y + 30}" r="2.5"/>`
+        `<path class="flow-edge ${a.mask & 1 ? '' : 'book-edge'}" d="M${a.x + 224} ${a.y + 41} C${a.x + 250} ${a.y + 41},${b.x - 22} ${b.y + 41},${b.x} ${b.y + 41}"/><circle class="graph-junction" cx="${b.x}" cy="${b.y + 41}" r="2.5"/>`
     )
     .join('');
   const cards = nodes.map(graphCard).join('');
   $('#graph').innerHTML =
-    `<svg id="flow-svg" data-natural-width="${width}" viewBox="0 0 ${width} ${height}" role="group" aria-label="Optimal enchantment combining tree" xmlns="http://www.w3.org/2000/svg">${paths}${cards}</svg>`;
+    `<svg id="flow-svg" data-natural-width="${width}" data-natural-height="${height}" viewBox="0 0 ${width} ${height}" role="group" aria-label="Optimal enchantment combining tree" xmlns="http://www.w3.org/2000/svg">${paths}${cards}</svg>`;
   applyZoom();
 }
 function renderSteps() {
@@ -231,6 +305,8 @@ function renderResult() {
   $('#plan-footnote').textContent =
     `${result.xp.toLocaleString()} XP if you recharge from level 0 for each step. One separate book per enchantment, already at the selected level. ${context.objective === 'penalty' ? 'Optimized for lowest final work penalty, then total levels.' : context.objective === 'xp' ? 'Optimized for that XP strategy.' : 'Optimized for fewest total levels.'}`;
   $('#export').disabled = false;
+  $('#graph-mode').hidden = false;
+  for (const id of ['zoom-in', 'zoom-out', 'zoom-fit']) $('#' + id).disabled = false;
   const windBurst = result.books.find((book) => book.id === 'wind_burst' && book.level > 1);
   $('#preparation-note').hidden = !windBurst;
   $('#preparation-note').textContent = windBurst
@@ -244,8 +320,12 @@ function renderResult() {
 function applyZoom() {
   const svg = $('#flow-svg');
   if (svg) {
-    svg.style.width = `${zoom * 100}%`;
-    svg.style.maxWidth = `${Number(svg.dataset.naturalWidth) * zoom}px`;
+    const naturalWidth = Number(svg.dataset.naturalWidth);
+    const available = Math.max(240, $('#graph').clientWidth - 28);
+    const width = (fitGraph ? Math.min(naturalWidth, available) : naturalWidth) * zoom;
+    svg.style.width = `${width}px`;
+    svg.style.height = `${(width * Number(svg.dataset.naturalHeight)) / naturalWidth}px`;
+    svg.style.maxWidth = 'none';
   }
 }
 export function setView(view) {
@@ -256,6 +336,8 @@ export function setView(view) {
     $('#' + v + '-tab').setAttribute('aria-pressed', v === view);
   }
   $('#step-detail').hidden = view !== 'flow' || !result;
+  if (view === 'flow') applyZoom();
+  reveal($('#' + view + '-view'));
 }
 function exportPlan() {
   if (!result) return;
@@ -290,15 +372,31 @@ function exportPlan() {
 
 $('#flow-tab').addEventListener('click', () => setView('flow'));
 $('#steps-tab').addEventListener('click', () => setView('steps'));
-$('#graph').addEventListener('click', (e) => {
-  const g = e.target.closest('[data-step]');
-  if (!g || !result) return;
-  activeStep = Number(g.dataset.step);
-  document
-    .querySelectorAll('.node')
-    .forEach((n) => n.classList.toggle('selected', Number(n.dataset.step) === activeStep));
-  renderDetail();
+$('#flow-view').addEventListener('click', (event) => {
+  if (!result) return;
+  if (event.target.closest('[data-graph-prev]')) selectStep(activeStep - 1, '[data-graph-prev]');
+  else if (event.target.closest('[data-graph-next]'))
+    selectStep(activeStep + 1, '[data-graph-next]');
+  else {
+    const node = event.target.closest('[data-step]');
+    if (node)
+      selectStep(
+        Number(node.dataset.step),
+        node.closest('#compact-graph') ? '[data-graph-select]' : null
+      );
+  }
 });
+$('#compact-graph').addEventListener('change', (event) => {
+  if (event.target.matches('[data-graph-select]')) {
+    selectStep(Number(event.target.value), '[data-graph-select]');
+  }
+});
+$('#graph-mode').addEventListener('click', () => {
+  const mode = $('.blueprint').dataset.graphMode === 'tree' ? 'step' : 'tree';
+  setGraphMode(mode);
+  reveal(mode === 'tree' ? $('#graph') : $('#compact-graph'));
+});
+window.addEventListener('resize', applyZoom);
 $('#graph').addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-step]')) {
     e.preventDefault();
@@ -318,10 +416,11 @@ $('#zoom-in').addEventListener('click', () => {
   applyZoom();
 });
 $('#zoom-out').addEventListener('click', () => {
-  zoom = Math.max(1, zoom - 0.25);
+  zoom = Math.max(0.5, zoom - 0.25);
   applyZoom();
 });
 $('#zoom-fit').addEventListener('click', () => {
+  fitGraph = true;
   zoom = 1;
   applyZoom();
 });

@@ -1,7 +1,7 @@
-// Your GitHub links. Paste the repository URL here after creating it.
+// Public project links.
 export const site = {
   githubUsername: 'Kieranmcm07',
-  repositoryUrl: '',
+  repositoryUrl: 'https://github.com/Kieranmcm07/Anvil-Studio',
 };
 
 export function setupGithubLinks() {

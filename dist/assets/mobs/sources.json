@@ -22,5 +22,9 @@
   "skeleton": {
     "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/SKELETON.png",
     "sha256": "c38a9b277a340252ee3e27a7d4db4bb65683756b1cf232df87afd95ea4ee687c"
+  },
+  "blaze": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/BLAZE.png",
+    "sha256": "78b34f97e4d09b3cd6b260e417cd49c9c9373baf78d0c3d3027803c7ddfb8d9a"
   }
 }

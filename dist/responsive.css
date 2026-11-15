@@ -1,0 +1,597 @@
+/* Layout follows the available panel width, including split-screen tablets. */
+.workspace > *,
+.two-fields > *,
+.results,
+.gear-preview > div,
+.result-heading > div,
+.view-tabs,
+.slot-content > div {
+  min-width: 0;
+}
+.results {
+  scroll-margin-top: 20px;
+}
+.blueprint {
+  container-type: inline-size;
+}
+.view-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+}
+.view-tabs button.active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 -2px var(--accent);
+}
+.graph {
+  height: clamp(320px, 55vh, 600px);
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+}
+.graph svg {
+  margin: 0 auto;
+}
+.graph:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+.graph-bottom button {
+  min-height: 44px;
+  min-width: 44px;
+}
+#graph-mode {
+  display: none;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--raised);
+}
+.compact-graph {
+  display: none;
+  padding: 16px;
+}
+.graph-step-nav {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.graph-step-nav button {
+  height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--raised);
+  font-size: 20px;
+}
+.graph-step-nav select {
+  margin: 0;
+  min-height: 44px;
+  text-align: center;
+  font-size: 16px;
+}
+.compact-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.compact-node {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  text-align: left;
+}
+.compact-node.book-node {
+  background: var(--book-bg);
+  border-color: var(--book-border);
+}
+button.compact-node:hover {
+  border-color: var(--accent);
+}
+.compact-node .item-sprite {
+  width: 44px;
+  height: 44px;
+  margin: 6px 0;
+}
+.compact-node small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.compact-node strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.compact-node span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.compact-connectors {
+  display: block;
+  width: 100%;
+  height: 48px;
+  overflow: visible;
+}
+.compact-connectors path {
+  fill: none;
+  stroke: var(--accent-border);
+  stroke-width: 2;
+}
+.compact-connectors .book-connector {
+  stroke: var(--book-border);
+}
+.compact-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.compact-result > div {
+  min-width: 0;
+}
+.compact-result strong {
+  margin-top: 4px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.theme-menu {
+  max-height: min(540px, 75dvh);
+  overflow-y: auto;
+}
+.topbar {
+  gap: 16px;
+}
+.header-right {
+  gap: clamp(10px, 2vw, 24px);
+}
+.brand {
+  flex-shrink: 0;
+}
+.check-step-heading {
+  align-items: flex-start;
+}
+.check-step-heading h3 {
+  min-width: 0;
+}
+.result-heading {
+  flex-wrap: wrap;
+}
+footer {
+  flex-wrap: wrap;
+}
+.creator-credit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+dialog {
+  max-height: 85dvh;
+  overflow: auto;
+}
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Compact graph and anvil slots depend on the result card, not the device name. */
+@container (max-width: 680px) {
+  .blueprint-toolbar {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    gap: 4px 12px;
+  }
+  .view-tabs {
+    flex: 1 1 auto;
+  }
+  .view-tabs button {
+    justify-content: center;
+    padding: 8px;
+    flex: 1;
+  }
+  #export {
+    margin-left: auto;
+    min-height: 44px;
+  }
+  .steps-view,
+  .step-detail {
+    padding: 12px;
+  }
+  .check-step {
+    padding: 13px;
+  }
+  .check-step-heading h3 {
+    font-size: 14px;
+  }
+  .step-cost {
+    font-size: 13px;
+  }
+  .anvil-slots {
+    grid-template-columns: minmax(0, 1fr) 12px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .anvil-slots > span:nth-of-type(2) {
+    display: none;
+  }
+  .anvil-slots > .output-slot {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .output-slot > small {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .slot-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .slot-content > div {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+  .output-slot .slot-content {
+    flex-direction: row;
+    align-items: center;
+    flex: 1;
+    flex-wrap: nowrap;
+  }
+  .slot strong {
+    font-size: 13px;
+  }
+  .slot-subtitle {
+    font-size: 11px;
+  }
+  .graph-caption {
+    flex-wrap: wrap;
+    padding: 14px 16px 0;
+  }
+  .graph-caption > span:last-child {
+    display: none;
+  }
+  .blueprint[data-graph-mode='step'] .graph,
+  .blueprint[data-graph-mode='step'] .graph-zoom,
+  .blueprint[data-graph-mode='step'] .graph-hint,
+  .blueprint[data-graph-mode='step'] .step-detail .anvil-slots {
+    display: none;
+  }
+  .blueprint[data-graph-mode='step'] .compact-graph {
+    display: block;
+  }
+  #graph-mode {
+    display: block;
+  }
+  .graph-bottom {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-size: 11px;
+  }
+  .graph-hint {
+    flex-basis: 100%;
+  }
+  .graph {
+    height: 420px;
+    max-height: 65dvh;
+  }
+  .step-detail-header {
+    align-items: flex-start;
+  }
+  .steps-intro {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .step-bottom {
+    gap: 6px;
+  }
+  .result-enchantments summary,
+  .done-control {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .result-enchantments summary::before {
+    content: '▸';
+    margin-right: 6px;
+  }
+  .result-enchantments[open] summary::before {
+    content: '▾';
+  }
+}
+@media (max-width: 1100px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .setup {
+    padding: 22px;
+  }
+  .level-buttons {
+    gap: 5px;
+  }
+  .level-buttons button {
+    width: 40px;
+    height: 44px;
+    font-size: 13px;
+  }
+  .enchant-name {
+    font-size: 14px;
+  }
+  .enchant-row {
+    padding: 10px 0;
+    gap: 10px;
+  }
+  .text-button,
+  .advanced summary,
+  .check-label {
+    min-height: 44px;
+  }
+  .advanced summary {
+    align-items: center;
+  }
+  .search input,
+  select,
+  input[type='number'] {
+    font-size: 16px;
+  }
+  .search {
+    min-height: 46px;
+  }
+  .edition-toggle button {
+    min-height: 44px;
+  }
+  .two-fields {
+    gap: 12px;
+  }
+  input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+  }
+  .enchantment-list {
+    min-height: 0;
+  }
+}
+@media (min-width: 700px) and (max-width: 1100px) {
+  .enchantment-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+  .enchant-row {
+    align-content: center;
+  }
+  .level-buttons button {
+    width: 36px;
+  }
+}
+@media (pointer: coarse) {
+  .level-buttons button {
+    min-width: 40px;
+    min-height: 44px;
+  }
+  .enchant-row {
+    gap: 10px;
+  }
+  .text-button,
+  summary,
+  .check-label,
+  .done-control {
+    min-height: 44px;
+  }
+  .text-button,
+  .done-control {
+    display: inline-flex;
+    align-items: center;
+  }
+  select,
+  input[type='search'],
+  input[type='number'] {
+    font-size: 16px;
+  }
+}
+@media (max-width: 580px) {
+  .topbar {
+    padding: 16px;
+    gap: 12px;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .theme-picker > summary {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+  main {
+    padding: 24px 12px 32px;
+  }
+  h1 {
+    font-size: clamp(28px, 7.5vw, 36px);
+    letter-spacing: -1px;
+  }
+  .intro {
+    margin-bottom: 24px;
+  }
+  .intro p {
+    max-width: 33em;
+  }
+  .setup {
+    padding: 16px;
+  }
+  .gear-preview {
+    padding: 12px;
+  }
+  .enchant-heading {
+    flex-wrap: wrap;
+    gap: 2px 10px;
+  }
+  .enchant-heading h3 {
+    font-size: 14px;
+  }
+  .enchant-name {
+    font-size: 14px;
+  }
+  .level-buttons button {
+    width: 40px;
+    height: 44px;
+  }
+  .result-heading h2 {
+    font-size: 23px;
+  }
+  .stats {
+    grid-template-columns: 1.1fr 1fr 0.7fr;
+    padding: 14px 0;
+  }
+  .stats > div {
+    padding: 0 10px;
+  }
+  .stats .item-label {
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .stats strong {
+    font-size: 26px;
+    line-height: 1.5;
+  }
+  .stats strong em {
+    font-size: 10px;
+    margin-left: 3px;
+    white-space: nowrap;
+  }
+  .view-tabs button span {
+    font-size: 13px;
+  }
+  .theme-menu {
+    width: min(290px, calc(100vw - 32px));
+  }
+  .theme-choices button {
+    min-height: 48px;
+  }
+  .motion-toggle {
+    min-height: 44px;
+  }
+  .background-mob {
+    display: block;
+    width: 100px;
+    height: 150px;
+  }
+  .background-mob.is-visible {
+    opacity: 0.18;
+  }
+  .mob-enderman,
+  .mob-blaze {
+    top: 18%;
+    right: -12px;
+    height: 180px;
+  }
+  .mob-creeper {
+    left: -35px;
+    top: 30%;
+  }
+  .mob-bee {
+    right: -15px;
+    top: 12%;
+    width: 90px;
+    height: 95px;
+  }
+  .mob-axolotl {
+    right: -20px;
+    bottom: 5%;
+  }
+  .mob-zombie,
+  .mob-skeleton {
+    display: none;
+  }
+  footer {
+    margin: 0 16px;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .footer-dot {
+    padding: 0 4px;
+  }
+  dialog {
+    padding: 20px;
+  }
+  .book-uses {
+    margin-left: 0;
+    gap: 12px;
+  }
+}
+@media (max-width: 380px) {
+  .enchant-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .level-buttons {
+    align-self: flex-end;
+  }
+  .two-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .check-step-heading {
+    flex-wrap: wrap;
+  }
+  .step-cost {
+    margin-left: 36px;
+  }
+  .stats .ui-item {
+    display: none;
+  }
+  .stats strong em {
+    display: block;
+    margin: 0;
+  }
+  .compact-graph {
+    padding: 12px;
+  }
+  .compact-inputs {
+    gap: 12px;
+  }
+  .compact-node {
+    padding: 10px;
+  }
+  .compact-node strong {
+    font-size: 13px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .theme-menu {
+    max-height: 65dvh;
+  }
+  .graph {
+    height: 300px;
+    max-height: none;
+  }
+}
+@media print {
+  .compact-graph,
+  #graph-mode {
+    display: none !important;
+  }
+  .graph {
+    max-height: none;
+  }
+  .blueprint {
+    container-type: normal;
+  }
+}

@@ -78,6 +78,20 @@ for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   $('#theme-picker').open = true;
   click(`[data-theme-choice="${theme}"]`);
   check(document.documentElement.dataset.theme === theme, `${theme}: selected theme applied`);
+  const mobs = {
+    forest: ['bee', 'creeper'],
+    amethyst: ['enderman'],
+    ocean: ['axolotl'],
+    ember: ['blaze'],
+    overworld: ['axolotl', 'bee', 'creeper', 'enderman', 'skeleton', 'zombie'],
+  };
+  check(
+    Array.from(document.querySelectorAll('.background-mob.is-visible'))
+      .map((image) => image.dataset.mob)
+      .sort()
+      .join(',') === mobs[theme].join(','),
+    `${theme}: matching Minecraft mobs are visible`
+  );
   check(
     $(`[data-theme-choice="${theme}"]`).getAttribute('aria-pressed') === 'true',
     `${theme}: selection announced`
@@ -86,8 +100,8 @@ for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   check(!$('#theme-picker').open, `${theme}: picker closes after choosing`);
 }
 check(
-  document.querySelectorAll('.background-mob[src]').length === 6,
-  'Mob theme loads all six local images'
+  document.querySelectorAll('.background-mob[src]').length === 7,
+  'Theme scenes load all seven local images'
 );
 check(
   document.querySelector('.world-background').getAttribute('aria-hidden') === 'true',
@@ -95,6 +109,17 @@ check(
 );
 click('#theme-motion');
 check(document.documentElement.dataset.motion === 'off', 'Animation toggle stops motion');
+const { reveal } = await import('../dist/motion.js');
+let revealCount = 0;
+const animationTarget = {
+  hidden: false,
+  getAnimations: () => [],
+  animate: () => {
+    revealCount++;
+  },
+};
+reveal(animationTarget);
+check(revealCount === 0, 'Animation toggle also stops JavaScript transitions');
 const { loadAppearance } = await import('../dist/themes.js');
 check(
   loadAppearance().motion === false && loadAppearance().theme === 'forest',
@@ -102,12 +127,16 @@ check(
 );
 click('#theme-motion');
 check(document.documentElement.dataset.motion === 'on', 'Animation toggle re-enables motion');
+reveal(animationTarget);
+check(revealCount === 1, 'Visible panels animate when motion is enabled');
 motionPreference.matches = true;
 motionPreference.listeners.forEach((listener) => listener());
 check(
   document.documentElement.dataset.motion === 'off' && !$('#reduced-motion-note').hidden,
   'System reduced-motion preference overrides animations'
 );
+reveal(animationTarget);
+check(revealCount === 1, 'System reduced-motion preference also stops JavaScript transitions');
 motionPreference.matches = false;
 motionPreference.listeners.forEach((listener) => listener());
 check(
@@ -176,6 +205,64 @@ check(
 );
 click('[data-step="2"]');
 check($('#step-detail').textContent.includes('STEP 2'), 'Flow node selects detail');
+check($('[data-graph-select]').value === '2', 'Tree and compact graph share the selected step');
+click('[data-graph-prev]');
+check(
+  $('[data-graph-select]').value === '1' && $('[data-graph-prev]').disabled,
+  'First graph step has no previous step'
+);
+click('[data-graph-next]');
+check($('#step-detail').textContent.includes('STEP 2'), 'Next graph step updates its details');
+change('[data-graph-select]', '6');
+check($('[data-graph-next]').disabled, 'Last graph step has no next step');
+check(
+  $('.compact-result').textContent.includes('Finished Helmet'),
+  'Compact graph shows the finished item'
+);
+check(
+  document.querySelectorAll('.compact-inputs .compact-node').length === 2,
+  'Compact graph displays both anvil inputs'
+);
+const previousInput = $('.compact-inputs [data-step]');
+check(previousInput, 'Combined inputs link back to their earlier step');
+const inputStep = previousInput.dataset.step;
+previousInput.click();
+check(
+  $('[data-graph-select]').value === inputStep,
+  'Earlier-step link follows the graph dependency'
+);
+click('#graph-mode');
+check($('.blueprint').dataset.graphMode === 'tree', 'Full tree mode opens');
+const naturalWidth = parseFloat($('#flow-svg').style.width);
+check(
+  naturalWidth === Number($('#flow-svg').dataset.naturalWidth),
+  'Full tree starts at readable natural size'
+);
+let panelWidth = 360;
+Object.defineProperty($('#graph'), 'clientWidth', { configurable: true, get: () => panelWidth });
+click('#zoom-fit');
+check(
+  parseFloat($('#flow-svg').style.width) <= panelWidth,
+  'Fit contains the full graph on a phone'
+);
+const fittedWidth = parseFloat($('#flow-svg').style.width);
+click('#zoom-in');
+check(parseFloat($('#flow-svg').style.width) > fittedWidth, 'Zoom enlarges the tree');
+click('#zoom-fit');
+panelWidth = 768;
+window.dispatchEvent(new window.Event('resize'));
+check(
+  parseFloat($('#flow-svg').style.width) <= panelWidth &&
+    parseFloat($('#flow-svg').style.width) > fittedWidth,
+  'Fitted graph adjusts on tablet resize'
+);
+click('#graph-mode');
+check($('.blueprint').dataset.graphMode === 'step', 'Compact graph can be restored');
+change('[data-graph-select]', '2');
+$('#flow-svg [data-step="3"]').dispatchEvent(
+  new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+);
+check($('[data-graph-select]').value === '3', 'Keyboard activation selects a tree step');
 click('#steps-tab');
 check($('.check-step.done'), 'Switching views preserves completed steps');
 click('#flow-tab');
@@ -280,7 +367,11 @@ check(
   $('#projects-link').href === 'https://github.com/Kieranmcm07?tab=repositories',
   'More projects opens the repositories tab'
 );
-check($('#repository-link').hidden, 'Unknown repository URL does not create a dead link');
+check(
+  !$('#repository-link').hidden &&
+    $('#repository-link').href === 'https://github.com/Kieranmcm07/Anvil-Studio',
+  'Repository button links to the actual source'
+);
 const { site, setupGithubLinks } = await import('../dist/config.js');
 site.repositoryUrl = 'https://github.com/example/test-repo';
 setupGithubLinks();
@@ -290,28 +381,39 @@ check(
 );
 site.repositoryUrl = '';
 setupGithubLinks();
+check($('#repository-link').hidden, 'An empty repository URL hides the link');
+site.repositoryUrl = 'https://github.com/Kieranmcm07/Anvil-Studio';
+setupGithubLinks();
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
 change('#item', 'shield');
 click('#preset');
-const savedInputs = localStorage.getItem('anvil-studio-v1');
+localStorage.setItem(
+  'anvil-studio-v1',
+  JSON.stringify({
+    edition: 'bedrock',
+    version: 'bedrock-26.3',
+    item: 'shield',
+    selected: { unbreaking: { level: 3, uses: 0 }, mending: { level: 1, uses: 0 } },
+  })
+);
 const startsBeforeReload = workerStarts;
 await import('../dist/app.js?returning-visit');
 await tick();
 check(
-  $('#version').value === 'bedrock-26.3' && $('#item').value === 'shield',
-  'Returning visit restores the chosen edition and equipment'
+  $('#version').value === 'java-26.3' && $('#item').value === 'helmet',
+  'Returning visit starts with fresh edition and equipment controls'
 );
-check($('#selection-count').textContent === '2', 'Returning visit restores enchantments');
+check(
+  $('#selection-count').textContent === '0',
+  'Returning visit never restores old recommended enchantments'
+);
 check(workerStarts === startsBeforeReload, 'Returning visit does not start the optimizer');
 check(!$('.check-step') && !$('#flow-svg'), 'Returning visit waits to generate steps and graph');
 check(
   $('#stat-total').textContent === '\u2014' && $('#export').disabled && $('#safety-badge').hidden,
   'Returning visit has no calculated cost or finished plan'
 );
-check(
-  localStorage.getItem('anvil-studio-v1') === savedInputs,
-  'Startup leaves saved choices intact'
-);
+check(localStorage.getItem('anvil-studio-v1') === null, 'Startup clears obsolete saved loadouts');
 console.log(`${checks} DOM interaction checks passed. Visual layout was not tested.`);
 window.happyDOM.abort();

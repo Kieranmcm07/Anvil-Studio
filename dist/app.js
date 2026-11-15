@@ -4,8 +4,8 @@ import { clearPlan, showPlan } from './plan-view.js';
 import { renderPicker } from './enchantment-picker.js';
 import { setupGithubLinks } from './config.js';
 import { setupThemes } from './themes.js';
+import { reveal, setupMotion, motionEnabled } from './motion.js';
 
-const STORAGE_KEY = 'anvil-studio-v1';
 const defaults = () => ({
   edition: 'java',
   version: 'java-26.3',
@@ -23,13 +23,6 @@ let raw = {};
 let worker = null;
 const profile = () => PROFILES.find((p) => p.id === state.version);
 const available = () => enchantsFor(raw, profile(), state.item);
-function persist() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    /* Private/storage-restricted browsers can still calculate. */
-  }
-}
 function cleanSelections() {
   const valid = available();
   state.selected = Object.fromEntries(
@@ -87,6 +80,7 @@ function renderControls() {
           : '';
   $('#version-note').textContent = note;
   $('#version-note').hidden = !note;
+  if (note) reveal($('#version-note'));
   $('#gear-name').textContent = itemName(state.item);
   $('#gear-icon').innerHTML = gearIcon(state.item);
   renderEnchantments();
@@ -97,11 +91,11 @@ function renderEnchantments() {
 function notice(message) {
   $('#notice').textContent = message;
   $('#notice').hidden = !message;
+  if (message) reveal($('#notice'));
 }
 function invalidate(message = '') {
   worker?.terminate();
   worker = null;
-  persist();
   clearPlan();
   $('#calculate').disabled = false;
   $('#calculate').firstElementChild.textContent = 'Show my steps';
@@ -174,7 +168,6 @@ function calculate() {
   $('#calculate').firstElementChild.textContent = 'Calculating…';
   $('#safety-badge').hidden = false;
   $('#safety-badge').textContent = 'Calculating…';
-  persist();
   worker?.terminate();
   worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
   worker.onmessage = ({ data }) => {
@@ -196,6 +189,12 @@ function calculate() {
       return;
     }
     showPlan({ ...data.result, theoretical: incompatible }, { ...state, profile: profile() });
+    if (window.matchMedia('(max-width: 1100px)').matches) {
+      $('.results').scrollIntoView({
+        behavior: motionEnabled() ? 'smooth' : 'auto',
+        block: 'start',
+      });
+    }
     if (incompatible)
       notice(
         'Theoretical plan: these enchantments conflict in the selected version. This result requires commands or mods and cannot be created in vanilla Survival.'
@@ -204,9 +203,7 @@ function calculate() {
   worker.onerror = () => {
     worker?.terminate();
     worker = null;
-    invalidate(
-      'The calculator could not start. Open this app through the Python launcher or an HTTP server, then try again.'
-    );
+    invalidate('The calculator could not start. Refresh the page and try again.');
   };
   worker.postMessage({
     books,
@@ -290,7 +287,6 @@ $('#book-history').addEventListener('change', (e) => {
 });
 $('#show-curses').addEventListener('change', (e) => {
   state.showCurses = e.target.checked;
-  persist();
   renderEnchantments();
 });
 $('#preset').addEventListener('click', applyPreset);
@@ -302,7 +298,10 @@ $('#reset').addEventListener('click', () => {
 });
 $('#calculate').addEventListener('click', calculate);
 for (const id of ['help-button', 'sources-button'])
-  $('#' + id).addEventListener('click', () => $('#help').showModal());
+  $('#' + id).addEventListener('click', () => {
+    $('#help').showModal();
+    reveal($('#help'));
+  });
 $('#close-help').addEventListener('click', () => $('#help').close());
 $('#help').addEventListener('click', (e) => {
   if (e.target === $('#help')) {
@@ -324,38 +323,19 @@ document.addEventListener('keydown', (e) => {
 
 setupGithubLinks();
 setupThemes();
+setupMotion();
 clearPlan();
+// Older versions saved a loadout. Each visit now starts with a fresh planner.
+try {
+  localStorage.removeItem('anvil-studio-v1');
+} catch {}
 
 try {
   const response = await fetch(new URL('./vanilla-data.json', import.meta.url));
   if (!response.ok) throw new Error('Data could not load');
   raw = (await response.json()).enchantments;
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (
-      saved &&
-      PROFILES.some((p) => p.id === saved.version && p.edition === saved.edition) &&
-      saved.selected &&
-      typeof saved.selected === 'object' &&
-      !Array.isArray(saved.selected)
-    ) {
-      state = { ...defaults(), ...saved };
-      if (!itemsFor(profile()).some((i) => i[0] === state.item)) state.item = 'helmet';
-      if (!['levels', 'xp', 'penalty'].includes(state.objective)) state.objective = 'levels';
-      if (!Number.isInteger(state.itemUses) || state.itemUses < 0 || state.itemUses > 6)
-        state.itemUses = 0;
-      state.selected = Object.fromEntries(
-        Object.entries(state.selected).filter(([, v]) => v && typeof v === 'object')
-      );
-      cleanSelections();
-    }
-  } catch {
-    state = defaults();
-  }
   renderControls();
 } catch {
-  notice(
-    'The game data could not load. Start this app with “python serve.py” and open the displayed localhost address.'
-  );
+  notice('The game data could not load. Refresh the page and try again.');
   $('#calculate').disabled = true;
 }

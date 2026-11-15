@@ -236,22 +236,21 @@ footer {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 700ms ease,
-    visibility 700ms;
-}
-[data-theme='overworld'] .world-background {
-  opacity: 1;
-  visibility: visible;
 }
 .world-glow {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 8% 35%, #78ac3e1f, transparent 45%),
-    radial-gradient(ellipse at 92% 70%, #8e71b01a, transparent 45%);
+    radial-gradient(
+      ellipse at 8% 35%,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 92% 70%,
+      color-mix(in srgb, var(--purple) 8%, transparent),
+      transparent 45%
+    );
 }
 .background-mob {
   position: absolute;
@@ -259,11 +258,17 @@ footer {
   height: clamp(150px, 25vh, 240px);
   object-fit: contain;
   image-rendering: pixelated;
-  opacity: 0.32;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 650ms ease,
+    visibility 650ms;
   animation: mob-float 9s ease-in-out infinite alternate;
   animation-play-state: paused;
 }
-[data-theme='overworld'] .background-mob {
+.background-mob.is-visible {
+  opacity: 0.32;
+  visibility: visible;
   animation-play-state: running;
 }
 .mob-creeper {
@@ -278,7 +283,7 @@ footer {
   animation-delay: -4s;
 }
 .mob-enderman {
-  top: 43%;
+  top: 30%;
   right: max(-25px, calc((100vw - 1650px) / 2));
   animation-delay: -2s;
 }
@@ -288,10 +293,10 @@ footer {
   animation-delay: -6s;
 }
 .mob-axolotl {
-  bottom: 1%;
+  bottom: 3%;
   right: 7%;
-  width: 155px;
-  height: 130px;
+  width: 180px;
+  height: 150px;
   animation-delay: -3s;
 }
 .mob-skeleton {
@@ -300,7 +305,56 @@ footer {
   width: 115px;
   animation-delay: -7s;
 }
-
+.mob-blaze {
+  top: 25%;
+  right: max(-15px, calc((100vw - 1650px) / 2));
+  animation-delay: -3s;
+}
+:root[data-theme='ocean'] .mob-axolotl {
+  top: 20%;
+  bottom: auto;
+}
+.graph,
+.compact-graph {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--accent) 17%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  animation: graph-drift 28s linear infinite;
+}
+@keyframes graph-drift {
+  to {
+    background-position: 40px 20px;
+  }
+}
+.compact-node,
+.graph-step-nav button {
+  transition:
+    border-color 180ms ease,
+    background-color 420ms ease,
+    transform 160ms ease;
+}
+button.compact-node:active,
+.graph-step-nav button:active:not(:disabled),
+.view-tabs button:active,
+.theme-choices button:active {
+  transform: scale(0.97);
+}
+.advanced[open] > summary > span {
+  transform: rotate(45deg);
+}
+.advanced > summary > span {
+  transition: transform 220ms ease;
+}
+.version-note:not([hidden]),
+.notice:not([hidden]),
+.plan-preparation:not([hidden]),
+.book-origin,
+.result-enchantments[open] > p,
+.plan-details[open] > p {
+  animation: step-in 260ms ease-out backwards;
+}
 .primary-button:hover:not(:disabled),
 .level-buttons button:hover:not(:disabled) {
   transform: translateY(-2px);

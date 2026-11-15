@@ -26,14 +26,14 @@ relicense the Minecraft names, item textures, mob renders or other third-party
 artwork. This also applies to the Minecraft images embedded in the repository
 banner at `assets/anvil-banner.svg`. Existing third-party notices still apply.
 
-## Interface icons and Overworld background
+## Interface icons and theme backgrounds
 
 The anvil and grass-block interface icons are native inventory renders from
 [Owen1212055/mc-assets](https://github.com/Owen1212055/mc-assets), pinned to commit
 `271a000189e86e101a1361af6d4266f6201ff726`. Other interface icons use the original
 Java 26.3 item textures from mcmeta, listed in `items/sources.json`.
 
-The creeper, bee, enderman, zombie, axolotl and skeleton are native Minecraft renders
+The creeper, bee, enderman, zombie, axolotl, skeleton and blaze are native Minecraft renders
 from [Owen1212055/mc-assets](https://github.com/Owen1212055/mc-assets), pinned to commit
 `271a000189e86e101a1361af6d4266f6201ff726`. The PNG files are unmodified; CSS controls
 their size, opacity and movement. They are decorative and do not determine the

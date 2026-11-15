@@ -1,5 +1,12 @@
 const STORAGE_KEY = 'anvil-studio-appearance';
 export const THEMES = ['forest', 'amethyst', 'ocean', 'ember', 'overworld'];
+const themeMobs = {
+  forest: ['creeper', 'bee'],
+  amethyst: ['enderman'],
+  ocean: ['axolotl'],
+  ember: ['blaze'],
+  overworld: ['creeper', 'bee', 'enderman', 'zombie', 'axolotl', 'skeleton'],
+};
 const backgrounds = {
   forest: '#101413',
   amethyst: '#16121e',
@@ -36,11 +43,15 @@ export function setupThemes() {
     document.querySelectorAll('[data-theme-choice]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.themeChoice === appearance.theme);
     });
-    // Only load the decorative images when this theme is used.
-    if (appearance.theme === 'overworld') {
-      document.querySelectorAll('[data-mob-src]').forEach((image) => {
-        image.src = image.dataset.mobSrc;
-        delete image.dataset.mobSrc;
+    document.querySelectorAll('[data-mob]').forEach((image) => {
+      const visible = themeMobs[appearance.theme].includes(image.dataset.mob);
+      if (visible && !image.getAttribute('src')) image.src = image.dataset.mobSrc;
+      image.classList.toggle('is-visible', visible);
+    });
+    if (root.dataset.motion === 'off') {
+      document.getAnimations?.().forEach((animation) => {
+        animation.finished.catch(() => {});
+        animation.cancel();
       });
     }
   }
