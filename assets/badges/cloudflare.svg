@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="191" height="32" viewBox="0 0 191 32" role="img" aria-label="CLOUDFLARE PAGES READY">
-  <title>CLOUDFLARE PAGES READY</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="191" height="32" viewBox="0 0 191 32" role="img" aria-label="CLOUDFLARE PAGES LIVE">
+  <title>CLOUDFLARE PAGES LIVE</title>
   <defs><clipPath id="badge"><rect width="191" height="32" rx="4"/></clipPath></defs>
   <g clip-path="url(#badge)">
     <rect width="191" height="32" fill="#151b16"/>
@@ -7,6 +7,6 @@
   </g>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing=".8" text-anchor="middle">
     <text x="66.5" y="20" fill="#e7eee1">CLOUDFLARE PAGES</text>
-    <text x="162.0" y="20" fill="#172015">READY</text>
+    <text x="162.0" y="20" fill="#172015">LIVE</text>
   </g>
 </svg>

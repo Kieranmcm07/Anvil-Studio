@@ -330,7 +330,6 @@ try {
   const response = await fetch(new URL('./vanilla-data.json', import.meta.url));
   if (!response.ok) throw new Error('Data could not load');
   raw = (await response.json()).enchantments;
-  let restored = false;
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (
@@ -349,14 +348,11 @@ try {
         Object.entries(state.selected).filter(([, v]) => v && typeof v === 'object')
       );
       cleanSelections();
-      restored = true;
     }
   } catch {
     state = defaults();
   }
   renderControls();
-  if (!restored) applyPreset();
-  if (Object.keys(state.selected).length) calculate();
 } catch {
   notice(
     'The game data could not load. Start this app with “python serve.py” and open the displayed localhost address.'

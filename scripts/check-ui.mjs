@@ -29,7 +29,11 @@ globalThis.fetch = async (url) => ({
   ok: true,
   json: async () => JSON.parse(await readFile(url, 'utf8')),
 });
+let workerStarts = 0;
 globalThis.Worker = class {
+  constructor() {
+    workerStarts++;
+  }
   postMessage(data) {
     queueMicrotask(() => this.onmessage({ data: { result: structuredClone(optimize(data)) } }));
   }
@@ -54,7 +58,21 @@ function check(value, message) {
 
 await import('../dist/app.js');
 await tick();
-check($('#safety-badge').textContent.includes('Survival safe'), 'Default helmet plan');
+check($('#selection-count').textContent === '0', 'First visit starts with no enchantments');
+check(workerStarts === 0, 'First visit does not start the optimizer');
+check(!$('.check-step') && !$('#flow-svg'), 'First visit has no generated steps or graph');
+check(
+  ['#stat-total', '#stat-peak', '#stat-steps'].every((id) => $(id).textContent === '\u2014'),
+  'First visit shows empty costs'
+);
+check($('#export').disabled && $('#safety-badge').hidden, 'First visit has no finished plan');
+click('#preset');
+check($('#selection-count').textContent === '6', 'Recommended fills the helmet selection');
+check(workerStarts === 0 && !$('.check-step'), 'Recommended does not calculate a plan');
+click('#calculate');
+await tick();
+check(workerStarts === 1, 'Show my steps starts the optimizer');
+check($('#safety-badge').textContent.includes('Survival safe'), 'Requested helmet plan');
 const totalBeforeTheme = $('#stat-total').textContent;
 for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   $('#theme-picker').open = true;
@@ -272,5 +290,28 @@ check(
 );
 site.repositoryUrl = '';
 setupGithubLinks();
+// Load a fresh app module with saved inputs to exercise returning-visitor startup.
+click('[data-edition="bedrock"]');
+change('#item', 'shield');
+click('#preset');
+const savedInputs = localStorage.getItem('anvil-studio-v1');
+const startsBeforeReload = workerStarts;
+await import('../dist/app.js?returning-visit');
+await tick();
+check(
+  $('#version').value === 'bedrock-26.3' && $('#item').value === 'shield',
+  'Returning visit restores the chosen edition and equipment'
+);
+check($('#selection-count').textContent === '2', 'Returning visit restores enchantments');
+check(workerStarts === startsBeforeReload, 'Returning visit does not start the optimizer');
+check(!$('.check-step') && !$('#flow-svg'), 'Returning visit waits to generate steps and graph');
+check(
+  $('#stat-total').textContent === '\u2014' && $('#export').disabled && $('#safety-badge').hidden,
+  'Returning visit has no calculated cost or finished plan'
+);
+check(
+  localStorage.getItem('anvil-studio-v1') === savedInputs,
+  'Startup leaves saved choices intact'
+);
 console.log(`${checks} DOM interaction checks passed. Visual layout was not tested.`);
 window.happyDOM.abort();

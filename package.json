@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Find the cheapest Minecraft enchantment order for Java and Bedrock, with clear anvil steps, a combining graph and custom themes.",
   "author": "Kieranmcm07",
+  "homepage": "https://anvil-studio.pages.dev/",
   "license": "MIT",
   "keywords": [
     "minecraft",

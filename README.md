@@ -5,12 +5,12 @@
 <p align="center">
   <img alt="Minecraft Java and Bedrock" src="assets/badges/minecraft.svg">
   <img alt="Plain JavaScript" src="assets/badges/javascript.svg">
-  <img alt="Cloudflare Pages ready" src="assets/badges/cloudflare.svg">
+  <img alt="Cloudflare Pages live" src="assets/badges/cloudflare.svg">
   <a href="LICENSE"><img alt="Code license: MIT" src="assets/badges/license.svg"></a>
 </p>
 
 <p align="center">
-  <a href="#try-it-online">Try it online</a> ·
+  <a href="https://anvil-studio.pages.dev/">Try it online</a> ·
   <a href="#using-the-planner">How to use it</a> ·
   <a href="#development">Development</a> ·
   <a href="#license">License</a>
@@ -22,9 +22,10 @@ levels. There is also a graph if you want to see how everything comes together.
 
 ## Try it online
 
-<!-- Replace this note and the navigation link with the confirmed Cloudflare Pages URL. -->
-The Cloudflare Pages demo link is being added. You can also
-[run the site locally](#development).
+**[Open Anvil Studio](https://anvil-studio.pages.dev/)**
+
+No installation needed. Choose your gear and enchantments, then select
+**Show my steps** to calculate a plan.
 
 ## Using the planner
 
