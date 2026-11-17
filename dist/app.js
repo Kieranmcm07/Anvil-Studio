@@ -326,7 +326,7 @@ document.addEventListener('keydown', (e) => {
 setupGithubLinks();
 setupThemes();
 setupMotion();
-clearPlan();
+clearPlan({ fresh: true });
 // Older versions saved a loadout. Each visit now starts with a fresh planner.
 try {
   localStorage.removeItem('anvil-studio-v1');

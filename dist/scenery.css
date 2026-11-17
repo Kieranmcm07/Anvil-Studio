@@ -40,12 +40,15 @@
 }
 .scene-landscape {
   position: absolute;
-  bottom: -1px;
+  bottom: -14px;
   left: 0;
   width: 100%;
   height: clamp(120px, 24svh, 260px);
   fill: var(--scene-colour);
   opacity: 0.14;
+  animation: landscape-sway 14s ease-in-out infinite alternate;
+  animation-play-state: paused;
+  transform-origin: center bottom;
 }
 .scene-amethyst .scene-landscape {
   opacity: 0.16;
@@ -74,7 +77,8 @@
   animation-play-state: paused;
 }
 .scene.is-active .scene-particle,
-.scene.is-active .scene-cloud {
+.scene.is-active .scene-cloud,
+.scene.is-active .scene-landscape {
   animation-play-state: running;
 }
 .scene-forest .scene-particle {
@@ -199,54 +203,28 @@
   transform: none;
 }
 .hero-highlight {
-  position: relative;
   display: inline-block;
   color: var(--accent);
-  background: linear-gradient(
-    110deg,
-    var(--accent) 25%,
-    var(--text) 42%,
-    var(--purple) 50%,
-    var(--accent) 65%
-  );
-  background-size: 250% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: enchant-glint 8s ease-in-out infinite;
+  transform-origin: center bottom;
+  animation: enchant-hop 6s ease-in-out infinite;
 }
-.hero-highlight::after {
-  content: '';
-  position: absolute;
-  bottom: -0.08em;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--purple), transparent);
-  transform-origin: left;
-  opacity: 0.5;
-  animation: enchant-underline 8s ease-in-out infinite;
-}
-@keyframes enchant-glint {
+@keyframes enchant-hop {
   0%,
-  12% {
-    background-position: 140% 50%;
-  }
-  40%,
+  68%,
   100% {
-    background-position: -70% 50%;
+    transform: translateY(0);
   }
-}
-@keyframes enchant-underline {
-  0%,
-  100% {
-    transform: scaleX(0.8);
-    opacity: 0.3;
+  73% {
+    transform: translateY(-10px);
   }
-  40%,
-  65% {
-    transform: scaleX(1);
-    opacity: 0.7;
+  78% {
+    transform: translateY(0);
+  }
+  82% {
+    transform: translateY(-4px);
+  }
+  87% {
+    transform: translateY(0);
   }
 }
 .stats strong {
@@ -264,8 +242,7 @@
 
 /* Give the small popup priority on phones without resetting any background loops. */
 body:has(#theme-picker[open]) .world-background *,
-body:has(#theme-picker[open]) .hero-highlight,
-body:has(#theme-picker[open]) .hero-highlight::after {
+body:has(#theme-picker[open]) .hero-highlight {
   animation-play-state: paused;
 }
 @media (max-width: 580px) {
@@ -285,9 +262,6 @@ body:has(#theme-picker[open]) .hero-highlight::after {
   .scene-cloud {
     width: 75px;
   }
-  .hero-highlight::after {
-    height: 1px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .scene-particle {
@@ -300,7 +274,32 @@ body:has(#theme-picker[open]) .hero-highlight::after {
     -webkit-text-fill-color: currentColor;
     animation: none;
   }
-  .hero-highlight::after {
-    display: none;
+}
+
+@keyframes landscape-sway {
+  from {
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  to {
+    transform: translate3d(0, -9px, 0) scaleX(1.025);
+  }
+}
+.scene-ocean .scene-landscape {
+  animation-duration: 9s;
+}
+.scene-amethyst .scene-landscape {
+  animation-duration: 12s;
+}
+.stats strong.is-clearing {
+  color: var(--muted);
+}
+#selection-count,
+#step-progress {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-highlight {
+    animation: none;
   }
 }

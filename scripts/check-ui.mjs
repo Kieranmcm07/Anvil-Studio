@@ -81,8 +81,8 @@ const originalAnimate = themeMenu.animate.bind(themeMenu);
 themeMenu.animate = (...args) => {
   popupReveals++;
   check(
-    args[0].every((frame) => !('transform' in frame)),
-    'Theme popup fades without moving its text'
+    args[0][0].transform === 'translateY(8px)' && args[1].duration >= 350,
+    'Theme popup has a visible, slower entrance'
   );
   return originalAnimate(...args);
 };
@@ -228,7 +228,16 @@ check(document.querySelectorAll('#flow-svg .node').length === 6, 'Six clickable 
 check($('#step-detail').textContent.includes('LEFT SLOT'), 'Anvil slot inspector');
 click('#steps-tab');
 check(!$('#steps-view').hidden, 'Step checklist opens');
+const progressCounter = $('#step-progress');
+const progressAnimate = progressCounter.animate.bind(progressCounter);
+let progressAnimations = 0;
+progressCounter.animate = (...args) => {
+  progressAnimations++;
+  return progressAnimate(...args);
+};
 click('[data-complete="1"]');
+check(progressAnimations === 1, 'Completing a step animates the changed progress count');
+progressCounter.animate = progressAnimate;
 check($('.check-step.done'), 'Step completion');
 check($('#step-progress').textContent === '1 of 6 done', 'Checklist progress updates');
 click('[data-theme-choice="ocean"]');
@@ -511,26 +520,26 @@ check(
 );
 check(counter.querySelector('.stat-value').textContent === '0', 'First result counts up from zero');
 advance(0);
-advance(150);
+advance(300);
 check(
   +counter.querySelector('.stat-value').textContent > 0 &&
     +counter.querySelector('.stat-value').textContent < 45,
   'Counter passes through intermediate values'
 );
-advance(420);
+advance(900);
 check(
   counter.querySelector('.stat-value').textContent === '45' && frames.size === 0,
   'Counter reaches the exact result and stops'
 );
 setStat(counter, 12, 'levels');
-advance(500);
-advance(650);
+advance(1000);
+advance(1300);
 check(
   +counter.querySelector('.stat-value').textContent < 45 &&
     +counter.querySelector('.stat-value').textContent > 12,
   'Cheaper plans count down'
 );
-advance(920);
+advance(1900);
 check(
   counter.querySelector('.stat-value').textContent === '12',
   'Downward counter settles exactly'
@@ -538,11 +547,45 @@ check(
 setStat(counter, 20);
 const staleFrame = [...frames.values()][0];
 clearStat(counter);
-staleFrame(1000);
+staleFrame(2000);
 check(
-  counter.textContent === '\u2014' && !counter.dataset.value && frames.size === 0,
-  'Clearing a plan cancels pending counters without restoring stale numbers'
+  !counter.dataset.value && counter.querySelector('.stat-value').textContent === '12',
+  'Clearing invalidates the result immediately but preserves its visible starting value'
 );
+advance(2000);
+advance(2450);
+check(
+  counter.querySelector('.stat-value').textContent === '6',
+  'Invalidated costs visibly count down before clearing'
+);
+const clearFrame = [...frames.values()][0];
+clearStat(counter);
+check([...frames.values()][0] === clearFrame, 'Repeated edits do not restart the countdown');
+advance(2900);
+check(
+  counter.textContent === '\u2014' && frames.size === 0,
+  'Countdown finishes at the empty state'
+);
+setStat(counter, 40);
+finishCounters();
+clearStat(counter);
+advance(3000);
+advance(3450);
+const interruptedClear = [...frames.values()][0];
+setStat(counter, 25);
+check(
+  counter.querySelector('.stat-value').textContent === '20',
+  'A new result continues from the currently visible value'
+);
+interruptedClear(3900);
+finishCounters();
+check(
+  counter.querySelector('.stat-value').textContent === '25',
+  'An old clearing frame cannot erase a new result'
+);
+clearStat(counter);
+finishCounters();
+check(counter.textContent === '\u2014', 'Disabling motion finishes an empty-state countdown');
 setStat(counter, 30);
 click('#theme-motion');
 check(
@@ -561,6 +604,31 @@ check(
   counter.querySelector('.stat-value').textContent === '0' && frames.size === 0,
   'Zero-operation plans stay exact'
 );
+change('#item', 'helmet');
+click('#preset');
+click('#calculate');
+await tick();
+finishCounters();
+const displayedTotal = $('#stat-total').querySelector('.stat-value').textContent;
+click('[data-enchant="mending"][data-level="1"]');
+check(
+  $('#stat-total').querySelector('.stat-value').textContent === displayedTotal &&
+    !$('#stat-total').dataset.value &&
+    $('#export').disabled,
+  'Editing a calculated plan starts a countdown and disables stale exports'
+);
+check(
+  $('#steps-view').textContent.includes('Update your plan') && !$('#flow-svg'),
+  'Edited plans explain that recalculation is needed'
+);
+advance(4000);
+advance(4900);
+check($('#stat-total').textContent === '\u2014', 'Selection edit completes its countdown');
+click('#calculate');
+await tick();
+finishCounters();
+check(hasPlan(), 'The edited selection can calculate a fresh plan');
+
 window.requestAnimationFrame = requestFrame;
 window.cancelAnimationFrame = cancelFrame;
 

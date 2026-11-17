@@ -2,9 +2,10 @@ import { itemName, itemIcon } from './data.js';
 import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
 import { reveal } from './motion.js';
-import { setStat, clearStat } from './stats.js';
+import { setStat, clearStat, updateCount } from './stats.js';
 
 let result = null;
+let needsUpdate = false;
 let context = null;
 let zoom = 1;
 let fitGraph = true;
@@ -13,6 +14,7 @@ let currentView = 'steps';
 const completed = new Set();
 
 export function showPlan(plan, settings) {
+  needsUpdate = false;
   result = plan;
   context = settings;
   zoom = 1;
@@ -23,12 +25,13 @@ export function showPlan(plan, settings) {
   renderResult();
 }
 
-export function clearPlan() {
+export function clearPlan({ fresh = false } = {}) {
+  needsUpdate = !fresh && (needsUpdate || Boolean(result));
   result = null;
   context = null;
   completed.clear();
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
-    clearStat($('#' + id));
+    clearStat($('#' + id), { immediate: fresh });
   }
   $('#result-title').textContent = 'Your enchanting steps';
   $('#plan-details').hidden = true;
@@ -42,8 +45,8 @@ export function clearPlan() {
   $('#step-detail').innerHTML = '';
   const empty = `<div class="empty-state">
     ${gearIcon('anvil')}
-    <h3>No plan yet</h3>
-    <p>Choose your enchantments, then click “Show my steps”.</p>
+    <h3>${needsUpdate ? 'Update your plan' : 'No plan yet'}</h3>
+    <p>${needsUpdate ? 'Your selection changed. Click “Show my steps” for the new order and costs.' : 'Choose your enchantments, then click “Show my steps”.'}</p>
   </div>`;
   $('#steps-view').innerHTML = empty;
   $('#graph').innerHTML = empty;
@@ -435,7 +438,7 @@ $('#steps-view').addEventListener('change', (e) => {
   if (e.target.checked) completed.add(step);
   else completed.delete(step);
   e.target.closest('.check-step').classList.toggle('done', e.target.checked);
-  $('#step-progress').textContent = `${completed.size} of ${result.steps.length} done`;
+  updateCount($('#step-progress'), `${completed.size} of ${result.steps.length} done`);
 });
 $('#zoom-in').addEventListener('click', () => {
   zoom = Math.min(3, zoom + 0.25);

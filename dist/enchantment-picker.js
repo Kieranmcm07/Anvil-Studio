@@ -1,5 +1,6 @@
 import { conflicts, minimumBookUses, nameOf, ROMAN } from './data.js';
 import { $, escape } from './ui.js';
+import { updateCount } from './stats.js';
 
 function levelButton(enchantment, level, selectedLevel, reason) {
   const label = `${enchantment.name} ${ROMAN[level]}`;
@@ -62,7 +63,7 @@ export function renderPicker(enchantments, state, profile, raw) {
   const search = $('#search').value.toLowerCase().trim();
   const count = Object.keys(state.selected).length;
   const edition = profile.edition === 'java' ? 'Java' : 'Bedrock';
-  $('#selection-count').textContent = String(count);
+  updateCount($('#selection-count'), String(count));
   $('#gear-summary').textContent =
     `${count} enchantment${count === 1 ? '' : 's'} selected · ${edition} ${profile.label}`;
 

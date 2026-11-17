@@ -329,16 +329,19 @@ footer {
 }
 .graph,
 .compact-graph {
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--accent) 17%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  animation: graph-drift 28s linear infinite;
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--accent) 24%, transparent) 1px, transparent 1px),
+    radial-gradient(color-mix(in srgb, var(--purple) 13%, transparent) 1px, transparent 1px);
+  background-size:
+    20px 20px,
+    40px 40px;
+  animation: graph-drift 10s linear infinite;
 }
 @keyframes graph-drift {
   to {
-    background-position: 40px 20px;
+    background-position:
+      20px 20px,
+      -40px 40px;
   }
 }
 .compact-node,

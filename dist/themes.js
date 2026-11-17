@@ -66,7 +66,7 @@ export function setupThemes() {
   picker.querySelector('summary').addEventListener('click', (event) => {
     event.preventDefault();
     picker.open = !picker.open;
-    if (picker.open) reveal(picker.querySelector('.theme-menu'), { fadeOnly: true, duration: 140 });
+    if (picker.open) reveal(picker.querySelector('.theme-menu'), { duration: 360 });
   });
 
   function save() {
