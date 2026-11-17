@@ -513,20 +513,6 @@ input[type='checkbox'] {
   font: 500 25px var(--display);
   letter-spacing: -0.7px;
 }
-.status-badge {
-  padding: 5px 9px;
-  border: 1px solid var(--accent-border);
-  border-radius: 20px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 11px;
-  white-space: nowrap;
-}
-.status-badge.warning {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border-color: var(--warning-border);
-}
 .stats {
   display: grid;
   grid-template-columns: 1.1fr 1fr 0.75fr;

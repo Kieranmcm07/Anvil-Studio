@@ -1,0 +1,306 @@
+/* Decorative scenery stays behind the page and never captures input. */
+.theme-scenery,
+.scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.scene {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 500ms ease,
+    visibility 500ms;
+}
+.scene.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+.scene-forest {
+  --scene-colour: #95ca69;
+  --particle-colour: #ceefa0;
+}
+.scene-amethyst {
+  --scene-colour: #b68ce6;
+  --particle-colour: #d8bcff;
+  --turn: 45deg;
+}
+.scene-ocean {
+  --scene-colour: #53b5cd;
+  --particle-colour: #9be4ef;
+}
+.scene-ember {
+  --scene-colour: #b96c46;
+  --particle-colour: #ffbd72;
+}
+.scene-overworld {
+  --scene-colour: #83b363;
+  --particle-colour: #bde58d;
+}
+.scene-landscape {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: clamp(120px, 24svh, 260px);
+  fill: var(--scene-colour);
+  opacity: 0.14;
+}
+.scene-amethyst .scene-landscape {
+  opacity: 0.16;
+}
+.scene-ember .scene-landscape {
+  opacity: 0.17;
+}
+.scene-ocean .scene-landscape {
+  opacity: 0.12;
+}
+.scene-line {
+  fill: none;
+  stroke: var(--scene-colour);
+  stroke-width: 2;
+}
+.scene-particle {
+  position: absolute;
+  left: var(--x);
+  bottom: var(--bottom);
+  width: 4px;
+  height: 4px;
+  background: var(--particle-colour);
+  opacity: 0.2;
+  border-radius: 1px;
+  animation: scenery-rise var(--duration) linear var(--delay) infinite;
+  animation-play-state: paused;
+}
+.scene.is-active .scene-particle,
+.scene.is-active .scene-cloud {
+  animation-play-state: running;
+}
+.scene-forest .scene-particle {
+  box-shadow: 0 0 8px #cbf49c55;
+  border-radius: 50%;
+}
+.scene-amethyst .scene-particle {
+  width: 5px;
+  height: 5px;
+}
+.scene-ocean .scene-particle {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--particle-colour);
+  background: transparent;
+}
+.scene-ember .scene-particle {
+  height: 6px;
+  box-shadow: 0 0 6px #ff993344;
+}
+.scene-cloud {
+  position: absolute;
+  top: 8%;
+  width: 130px;
+  height: 40px;
+  background: #e2ebce;
+  opacity: 0.09;
+  clip-path: polygon(
+    0 40%,
+    15% 40%,
+    15% 15%,
+    40% 15%,
+    40% 0,
+    65% 0,
+    65% 25%,
+    85% 25%,
+    85% 45%,
+    100% 45%,
+    100% 100%,
+    0 100%
+  );
+  animation: cloud-drift 22s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+.cloud-one {
+  left: 4%;
+}
+.cloud-two {
+  right: 4%;
+  top: 48%;
+  animation-delay: -9s;
+  width: 100px;
+}
+@keyframes scenery-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0) rotate(var(--turn, 0deg));
+  }
+  18%,
+  65% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(12px, -180px, 0) rotate(var(--turn, 0deg));
+  }
+}
+@keyframes cloud-drift {
+  from {
+    transform: translate3d(-12px, 0, 0);
+  }
+  to {
+    transform: translate3d(12px, 0, 0);
+  }
+}
+
+/* Three separate vertical slots leave room for each Overworld mob to float. */
+.mob-skeleton,
+.mob-creeper,
+.mob-zombie,
+.mob-bee,
+.mob-enderman,
+.mob-axolotl {
+  height: min(180px, 24svh);
+}
+.mob-skeleton,
+.mob-bee {
+  top: 5svh;
+  bottom: auto;
+}
+.mob-creeper,
+.mob-enderman {
+  top: 37svh;
+  bottom: auto;
+}
+.mob-zombie,
+.mob-axolotl {
+  top: 69svh;
+  bottom: auto;
+}
+.scene-mob {
+  top: 22svh;
+  bottom: auto;
+  left: auto;
+  right: max(8px, calc((100vw - 1380px) / 2 - 214px));
+  width: clamp(110px, 12vw, 180px);
+  height: clamp(110px, 22svh, 190px);
+}
+
+.search-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+.theme-menu {
+  transform: none;
+}
+.hero-highlight {
+  position: relative;
+  display: inline-block;
+  color: var(--accent);
+  background: linear-gradient(
+    110deg,
+    var(--accent) 25%,
+    var(--text) 42%,
+    var(--purple) 50%,
+    var(--accent) 65%
+  );
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: enchant-glint 8s ease-in-out infinite;
+}
+.hero-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -0.08em;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--purple), transparent);
+  transform-origin: left;
+  opacity: 0.5;
+  animation: enchant-underline 8s ease-in-out infinite;
+}
+@keyframes enchant-glint {
+  0%,
+  12% {
+    background-position: 140% 50%;
+  }
+  40%,
+  100% {
+    background-position: -70% 50%;
+  }
+}
+@keyframes enchant-underline {
+  0%,
+  100% {
+    transform: scaleX(0.8);
+    opacity: 0.3;
+  }
+  40%,
+  65% {
+    transform: scaleX(1);
+    opacity: 0.7;
+  }
+}
+.stats strong {
+  font-variant-numeric: tabular-nums;
+}
+.stats strong .stat-value {
+  display: inline;
+  min-height: 0;
+  color: inherit;
+  font: inherit;
+}
+.stats strong .sr-only {
+  min-height: 0;
+}
+
+/* Give the small popup priority on phones without resetting any background loops. */
+body:has(#theme-picker[open]) .world-background *,
+body:has(#theme-picker[open]) .hero-highlight,
+body:has(#theme-picker[open]) .hero-highlight::after {
+  animation-play-state: paused;
+}
+@media (max-width: 580px) {
+  .scene-mob {
+    left: auto;
+    right: -16px;
+    width: 110px;
+    height: 150px;
+  }
+  .scene-landscape {
+    opacity: 0.09;
+    height: 150px;
+  }
+  .scene-particle:nth-of-type(even) {
+    display: none;
+  }
+  .scene-cloud {
+    width: 75px;
+  }
+  .hero-highlight::after {
+    height: 1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-particle {
+    opacity: 0.2;
+  }
+}
+@media print {
+  .hero-highlight {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    animation: none;
+  }
+  .hero-highlight::after {
+    display: none;
+  }
+}

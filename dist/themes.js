@@ -1,4 +1,5 @@
 import { reveal, finishReveals } from './motion.js';
+import { finishCounters } from './stats.js';
 
 const STORAGE_KEY = 'anvil-studio-appearance';
 export const THEMES = ['forest', 'amethyst', 'ocean', 'ember', 'overworld'];
@@ -43,6 +44,9 @@ export function setupThemes() {
     document.querySelectorAll('[data-theme-choice]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.themeChoice === appearance.theme);
     });
+    document.querySelectorAll('[data-scene]').forEach((scene) => {
+      scene.classList.toggle('is-active', scene.dataset.scene === appearance.theme);
+    });
     document.querySelectorAll('[data-mob]').forEach((image) => {
       const visible = themeMobs[appearance.theme].includes(image.dataset.mob);
       if (visible && !image.getAttribute('src')) image.src = image.dataset.mobSrc;
@@ -51,13 +55,18 @@ export function setupThemes() {
   }
   function applyMotion() {
     const enabled = appearance.motion && !reducedMotion.matches;
-    if (!enabled) finishReveals();
+    if (!enabled) {
+      finishReveals();
+      finishCounters();
+    }
     root.dataset.motion = enabled ? 'on' : 'off';
     motionControl.checked = appearance.motion;
     document.querySelector('#reduced-motion-note').hidden = !reducedMotion.matches;
   }
-  picker.addEventListener('toggle', () => {
-    if (picker.open) reveal(picker.querySelector('.theme-menu'));
+  picker.querySelector('summary').addEventListener('click', (event) => {
+    event.preventDefault();
+    picker.open = !picker.open;
+    if (picker.open) reveal(picker.querySelector('.theme-menu'), { fadeOnly: true, duration: 140 });
   });
 
   function save() {

@@ -2,6 +2,7 @@ import { itemName, itemIcon } from './data.js';
 import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
 import { reveal } from './motion.js';
+import { setStat, clearStat } from './stats.js';
 
 let result = null;
 let context = null;
@@ -27,10 +28,8 @@ export function clearPlan() {
   context = null;
   completed.clear();
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
-    $('#' + id).textContent = '—';
+    clearStat($('#' + id));
   }
-  $('#safety-badge').hidden = true;
-  $('#safety-badge').classList.remove('warning');
   $('#result-title').textContent = 'Your enchanting steps';
   $('#plan-details').hidden = true;
   $('#plan-details').open = false;
@@ -310,17 +309,14 @@ function renderSteps() {
       .join('');
 }
 function renderResult() {
-  $('#safety-badge').hidden = false;
   $('#plan-details').hidden = false;
   $('#result-title').textContent =
     context.item === 'book'
       ? 'Combine your books'
       : `Enchant your ${itemName(context.item).toLowerCase()}`;
-  $('#safety-badge').textContent = result.theoretical ? '⚠ Theoretical only' : '✓ Survival safe';
-  $('#safety-badge').classList.toggle('warning', result.theoretical);
-  $('#stat-total').innerHTML = `${result.total}<em>levels</em>`;
-  $('#stat-peak').innerHTML = `${result.peak}<em>${result.theoretical ? 'levels' : '/ 39'}</em>`;
-  $('#stat-steps').textContent = String(result.steps.length);
+  setStat($('#stat-total'), result.total, 'levels');
+  setStat($('#stat-peak'), result.peak, result.theoretical ? 'levels' : '/ 39');
+  setStat($('#stat-steps'), result.steps.length);
   $('#peak-note').textContent = result.theoretical
     ? 'Survival rules overridden'
     : 'Every step is within the limit';

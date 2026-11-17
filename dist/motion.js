@@ -8,15 +8,17 @@ export function motionEnabled() {
   );
 }
 
-export function reveal(element) {
+export function reveal(element, { fadeOnly = false, duration = 260 } = {}) {
   if (!element || element.hidden || !motionEnabled() || !element.animate) return;
   activeReveals.get(element)?.cancel();
   const animation = element.animate(
-    [
-      { opacity: 0, transform: 'translateY(8px)' },
-      { opacity: 1, transform: 'translateY(0)' },
-    ],
-    { duration: 260, easing: 'cubic-bezier(.2,.7,.2,1)' }
+    fadeOnly
+      ? [{ opacity: 0 }, { opacity: 1 }]
+      : [
+          { opacity: 0, transform: 'translateY(8px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ],
+    { duration, easing: 'cubic-bezier(.2,.7,.2,1)' }
   );
   if (animation) {
     running.add(animation);
@@ -49,7 +51,7 @@ export function setupMotion() {
     'toggle',
     (event) => {
       if (event.target.tagName !== 'DETAILS' || !event.target.open) return;
-      // The theme menu has its own CSS entrance; don't restart it with a second animation.
+      // The theme menu animates directly on click; don't start it again on toggle.
       if (event.target.id === 'theme-picker') return;
       for (const child of event.target.children) {
         if (child.tagName !== 'SUMMARY') reveal(child);

@@ -173,8 +173,6 @@ function calculate() {
   notice('');
   $('#calculate').disabled = true;
   $('#calculate').firstElementChild.textContent = 'Calculating…';
-  $('#safety-badge').hidden = false;
-  $('#safety-badge').textContent = 'Calculating…';
   worker?.terminate();
   worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
   worker.onmessage = ({ data }) => {
@@ -190,9 +188,6 @@ function calculate() {
       invalidate(
         'No survival-safe order exists for these inputs. Try fewer enchantments or use an item/books with lower prior-work counts.'
       );
-      $('#safety-badge').hidden = false;
-      $('#safety-badge').textContent = 'Too expensive';
-      $('#safety-badge').classList.add('warning');
       return;
     }
     showPlan({ ...data.result, theoretical: incompatible }, { ...state, profile: profile() });

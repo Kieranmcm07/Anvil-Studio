@@ -40,6 +40,7 @@ globalThis.Worker = class {
   terminate() {}
 };
 const $ = (s) => document.querySelector(s);
+const hasPlan = () => !$('#export').disabled && !$('#plan-details').hidden;
 const click = (s) => {
   assert($(s), 'Missing control: ' + s);
   if (typeof $(s).click === 'function') $(s).click();
@@ -65,26 +66,30 @@ check(
   ['#stat-total', '#stat-peak', '#stat-steps'].every((id) => $(id).textContent === '\u2014'),
   'First visit shows empty costs'
 );
-check($('#export').disabled && $('#safety-badge').hidden, 'First visit has no finished plan');
+check($('#export').disabled && !$('#safety-badge'), 'First visit has no finished plan');
 click('#preset');
 check($('#selection-count').textContent === '6', 'Recommended fills the helmet selection');
 check(workerStarts === 0 && !$('.check-step'), 'Recommended does not calculate a plan');
 click('#calculate');
 await tick();
 check(workerStarts === 1, 'Show my steps starts the optimizer');
-check($('#safety-badge').textContent.includes('Survival safe'), 'Requested helmet plan');
-const totalBeforeTheme = $('#stat-total').textContent;
+check(hasPlan(), 'Requested helmet plan');
+const totalBeforeTheme = $('#stat-total').dataset.value;
 let popupReveals = 0;
 const themeMenu = $('.theme-menu');
 const originalAnimate = themeMenu.animate.bind(themeMenu);
 themeMenu.animate = (...args) => {
   popupReveals++;
+  check(
+    args[0].every((frame) => !('transform' in frame)),
+    'Theme popup fades without moving its text'
+  );
   return originalAnimate(...args);
 };
 for (let i = 0; i < 3; i++) {
-  $('#theme-picker').open = true;
+  click('#theme-picker > summary');
   await tick();
-  $('#theme-picker').open = false;
+  click('#theme-picker > summary');
   await tick();
 }
 check(popupReveals === 3, 'Theme popup gets exactly one entrance per opening');
@@ -111,8 +116,13 @@ for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
     $(`[data-theme-choice="${theme}"]`).getAttribute('aria-pressed') === 'true',
     `${theme}: selection announced`
   );
-  check($('#stat-total').textContent === totalBeforeTheme, `${theme}: calculation preserved`);
+  check($('#stat-total').dataset.value === totalBeforeTheme, `${theme}: calculation preserved`);
   check(!$('#theme-picker').open, `${theme}: picker closes after choosing`);
+  check(
+    document.querySelectorAll('.scene.is-active').length === 1 &&
+      $('.scene.is-active').dataset.scene === theme,
+    theme + ': only its matching scenery is active'
+  );
 }
 check(
   document.querySelectorAll('.background-mob[src]').length === 10,
@@ -305,7 +315,7 @@ check(
   'A fresh calculation opens the numbered steps'
 );
 check(!document.querySelector('[data-enchant="sweeping_edge"]'), 'Bedrock hides Sweeping Edge');
-check($('#safety-badge').textContent.includes('Survival safe'), 'Bedrock sword plan');
+check(hasPlan(), 'Bedrock sword plan');
 click('[data-edition="java"]');
 change('#version', 'java-1.14');
 change('#item', 'helmet');
@@ -314,10 +324,7 @@ click('[data-enchant="blast_protection"][data-level="4"]');
 click('#calculate');
 await tick();
 check($('#selection-count').textContent === '2', 'Legacy stacked protections selected');
-check(
-  $('#safety-badge').textContent.includes('Survival safe'),
-  'Legacy protections are survival-safe'
-);
+check(hasPlan(), 'Legacy protections are survival-safe');
 change('#version', 'java-26.3');
 check($('#selection-count').textContent === '1', 'Modern profile removes legacy conflict');
 click('#incompatible');
@@ -325,7 +332,7 @@ click('[data-enchant="blast_protection"][data-level="4"]');
 click('#calculate');
 await tick();
 check(
-  $('#safety-badge').textContent.includes('Theoretical'),
+  $('#notice').textContent.includes('Theoretical plan'),
   'Conflicting plan never claims survival safety'
 );
 click('#incompatible');
@@ -342,11 +349,14 @@ check(
   'Preparation cost exclusion is visible beside the total'
 );
 check(!$('#plan-details').hidden, 'Calculated cost details are available');
-check($('#safety-badge').textContent.includes('Survival safe'), 'Mace plan is executable');
+check(hasPlan(), 'Mace plan is executable');
 change('#item-uses', '6');
 click('#calculate');
 await tick();
-check($('#safety-badge').textContent === 'Too expensive', 'Impossible plan has no stale success');
+check(
+  !hasPlan() && $('#notice').textContent.includes('No survival-safe order'),
+  'Impossible plan has no stale success'
+);
 check(
   $('#plan-details').hidden && $('#plan-footnote').textContent === '',
   'Failed plan clears old XP costs'
@@ -380,7 +390,7 @@ for (const edition of ['java', 'bedrock']) {
   click('#preset');
   click('#calculate');
   await tick();
-  check($('#safety-badge').textContent.includes('Survival safe'), `${edition}: shield plan works`);
+  check(hasPlan(), `${edition}: shield plan works`);
 }
 click('#reset');
 check(
@@ -444,10 +454,7 @@ for (const item of ['turtle_helmet', 'brush']) {
   click('#preset');
   click('#calculate');
   await tick();
-  check(
-    $('#safety-badge').textContent.includes('Survival safe'),
-    item + ': calculates a survival plan'
-  );
+  check(hasPlan(), item + ': calculates a survival plan');
 }
 change('#item', 'book');
 check($('#preset').hidden, 'Book mode lets players choose their own combination');
@@ -455,14 +462,14 @@ click('[data-enchant="mending"][data-level="1"]');
 click('#calculate');
 await tick();
 check(
-  $('#stat-steps').textContent === '0' &&
+  $('#stat-steps').dataset.value === '0' &&
     $('#steps-view').textContent.includes('No anvil steps needed'),
   'One enchanted book needs no operations'
 );
 click('[data-enchant="unbreaking"][data-level="3"]');
 click('#calculate');
 await tick();
-check($('#stat-steps').textContent === '1', 'Two enchanted books require exactly one combine');
+check($('#stat-steps').dataset.value === '1', 'Two enchanted books require exactly one combine');
 check(
   document.querySelectorAll('#flow-svg image').length === 2,
   'Book graph has no phantom blank book'
@@ -477,6 +484,85 @@ check(
   'Both editions have Minecraft symbols'
 );
 click('#reset');
+
+// Drive the counters with deterministic frame times, including cancellation and reduced motion.
+const { setStat, clearStat, finishCounters } = await import('../dist/stats.js');
+finishCounters();
+const requestFrame = window.requestAnimationFrame;
+const cancelFrame = window.cancelAnimationFrame;
+const frames = new Map();
+let frameId = 0;
+window.requestAnimationFrame = (callback) => {
+  frames.set(++frameId, callback);
+  return frameId;
+};
+window.cancelAnimationFrame = (id) => frames.delete(id);
+const advance = (time) => {
+  const pending = [...frames.values()];
+  frames.clear();
+  pending.forEach((callback) => callback(time));
+};
+const counter = document.createElement('strong');
+counter.id = 'counter-test';
+setStat(counter, 45, 'levels');
+check(
+  counter.dataset.value === '45' && counter.querySelector('.sr-only').textContent === '45 levels',
+  'Counter exposes the exact final cost immediately'
+);
+check(counter.querySelector('.stat-value').textContent === '0', 'First result counts up from zero');
+advance(0);
+advance(150);
+check(
+  +counter.querySelector('.stat-value').textContent > 0 &&
+    +counter.querySelector('.stat-value').textContent < 45,
+  'Counter passes through intermediate values'
+);
+advance(420);
+check(
+  counter.querySelector('.stat-value').textContent === '45' && frames.size === 0,
+  'Counter reaches the exact result and stops'
+);
+setStat(counter, 12, 'levels');
+advance(500);
+advance(650);
+check(
+  +counter.querySelector('.stat-value').textContent < 45 &&
+    +counter.querySelector('.stat-value').textContent > 12,
+  'Cheaper plans count down'
+);
+advance(920);
+check(
+  counter.querySelector('.stat-value').textContent === '12',
+  'Downward counter settles exactly'
+);
+setStat(counter, 20);
+const staleFrame = [...frames.values()][0];
+clearStat(counter);
+staleFrame(1000);
+check(
+  counter.textContent === '\u2014' && !counter.dataset.value && frames.size === 0,
+  'Clearing a plan cancels pending counters without restoring stale numbers'
+);
+setStat(counter, 30);
+click('#theme-motion');
+check(
+  counter.querySelector('.stat-value').textContent === '30' && frames.size === 0,
+  'Disabling animations finishes pending counters'
+);
+setStat(counter, 7, 'levels');
+check(
+  counter.querySelector('.stat-value').textContent === '7' && frames.size === 0,
+  'Motion-off results appear immediately'
+);
+click('#theme-motion');
+setStat(counter, 0);
+finishCounters();
+check(
+  counter.querySelector('.stat-value').textContent === '0' && frames.size === 0,
+  'Zero-operation plans stay exact'
+);
+window.requestAnimationFrame = requestFrame;
+window.cancelAnimationFrame = cancelFrame;
 
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
@@ -505,7 +591,7 @@ check(
 check(workerStarts === startsBeforeReload, 'Returning visit does not start the optimizer');
 check(!$('.check-step') && !$('#flow-svg'), 'Returning visit waits to generate steps and graph');
 check(
-  $('#stat-total').textContent === '\u2014' && $('#export').disabled && $('#safety-badge').hidden,
+  $('#stat-total').textContent === '\u2014' && $('#export').disabled && !$('#safety-badge'),
   'Returning visit has no calculated cost or finished plan'
 );
 check(localStorage.getItem('anvil-studio-v1') === null, 'Startup clears obsolete saved loadouts');

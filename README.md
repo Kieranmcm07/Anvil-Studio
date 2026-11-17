@@ -47,7 +47,8 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Offers recommended selections, search and settings for previous anvil work.
 - Supports turtle shells, brushes and combining enchanted books into one book.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
-- Uses Minecraft item artwork, with animated mob backgrounds for each theme.
+- Uses Minecraft item artwork, with separate mob scenes, fireflies, crystals, bubbles and embers.
+- Animates the heading and plan totals, with a switch to turn motion off.
 - Adapts to phones and tablets, with a readable graph for each step and an optional full tree.
 - Remembers your theme and animation setting. Each visit starts with a fresh planner.
 
@@ -56,10 +57,10 @@ for total levels, XP or the final prior-work penalty.
 
 ## Version profiles
 
-| Edition | Versions |
-| --- | --- |
-| Java | 26.3, 1.21, 1.20, 1.14–1.14.2, 1.14.3 pre-release 1, 1.11.1, 1.11, 1.9–1.10.2 |
-| Bedrock | 26.3, 1.21 |
+| Edition | Versions                                                                      |
+| ------- | ----------------------------------------------------------------------------- |
+| Java    | 26.3, 1.21, 1.20, 1.14–1.14.2, 1.14.3 pre-release 1, 1.11.1, 1.11, 1.9–1.10.2 |
+| Bedrock | 26.3, 1.21                                                                    |
 
 Profiles apply the relevant item availability, book costs and compatibility
 rules. Historical protection stacking and Mending/Infinity exceptions are handled
@@ -123,15 +124,15 @@ Mods, plugins and custom data packs may change the rules.
 
 ## Editing the project
 
-| Location | Purpose |
-| --- | --- |
-| `dist/index.html` | Page layout and help text |
-| `dist/style.css`, `dist/responsive.css`, `dist/themes.css` | Layouts, colours and animations |
-| `dist/app.js`, `dist/plan-view.js` | Controls, results, graph and export |
-| `dist/data.js`, `dist/optimizer.js` | Version rules and calculation logic |
-| `dist/assets/` | Item images, mob images and credits |
-| `scripts/` | Data and artwork download helpers, plus interface checks |
-| `tests/` | Calculator regression tests |
+| Location                                                   | Purpose                                                  |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
+| `dist/index.html`                                          | Page layout and help text                                |
+| `dist/style.css`, `dist/responsive.css`, `dist/themes.css`, `dist/scenery.css` | Layouts, colours and animations                          |
+| `dist/app.js`, `dist/plan-view.js`, `dist/stats.js` | Controls, results, graph, animated totals and export                      |
+| `dist/data.js`, `dist/optimizer.js`                        | Version rules and calculation logic                      |
+| `dist/assets/`                                             | Item images, mob images and credits                      |
+| `scripts/`                                                 | Data and artwork download helpers, plus interface checks |
+| `tests/`                                                   | Calculator regression tests                              |
 
 Edit the files and refresh the local preview to see your changes.
 
