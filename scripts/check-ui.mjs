@@ -433,15 +433,56 @@ click('[data-complete="6"]');
 check($('#completion').hidden, 'Unchecking a step hides the completion message');
 click('[data-complete="6"]');
 check(
-  !$('#completion').classList.contains('celebrate') &&
-    playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
-  'Reticking a step does not replay the celebration'
+  $('#completion').classList.contains('celebrate') &&
+    playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 2 &&
+    playedSounds.at(-1).endsWith('/levelup.ogg'),
+  'Completing the plan again replays the celebration sound'
 );
 
 check(
-  $('#completion .glint-mask').style.getPropertyValue('--item-mask').includes('diamond_helmet.png'),
-  'Original glint is masked to the completed item'
+  !$('#completion .glint-mask') &&
+    $('#completion .finished-icon img').getAttribute('src').endsWith('diamond_helmet.png'),
+  'Completion keeps the original item without the purple overlay'
 );
+const stepButton = $('[data-complete="6"]');
+check(
+  stepButton.tagName === 'BUTTON' &&
+    stepButton.getAttribute('aria-pressed') === 'true' &&
+    stepButton.getAttribute('aria-label') === 'Undo step 6',
+  'Completion control is an accessible toggle button'
+);
+check(
+  stepButton.nextElementSibling.classList.contains('anvil-slots'),
+  'Large completion button is above the slots, not at the bottom'
+);
+const beforeUndo = playedSounds.length;
+click('[data-complete="6"]');
+check(
+  stepButton.getAttribute('aria-pressed') === 'false' &&
+    stepButton.textContent === 'Mark step done' &&
+    playedSounds.length === beforeUndo + 1,
+  'Undo restores the button and plays just one click'
+);
+const beforeRedo = playedSounds.length;
+click('[data-complete="6"]');
+check(
+  playedSounds.length === beforeRedo + 1 && playedSounds.at(-1).endsWith('/levelup.ogg'),
+  'Finishing again plays only the celebration, without a duplicate click or ping'
+);
+const dropdown = $('#version');
+const beforeOpen = playedSounds.length;
+dropdown.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true }));
+dropdown.dispatchEvent(new window.Event('pointerdown', { bubbles: true }));
+click('#version');
+check(playedSounds.length === beforeOpen, 'Focusing or opening a dropdown is silent');
+change('#version', 'java-1.21');
+check(playedSounds.length === beforeOpen + 1, 'Changing the dropdown value sounds exactly once');
+click('#version');
+change('#version', 'java-1.21');
+check(playedSounds.length === beforeOpen + 1, 'Closing or reselecting the same value stays silent');
+change('#version', 'java-26.3');
+check(playedSounds.length === beforeOpen + 2, 'A subsequent real selection sounds once');
+
 check(
   soundVolumes
     .filter((sound) => sound.src.endsWith('/step.ogg'))
@@ -450,7 +491,6 @@ check(
 );
 for (const selector of [
   '#search',
-  '#version',
   '#repository-link',
   '#projects-link',
   '#creator-link',

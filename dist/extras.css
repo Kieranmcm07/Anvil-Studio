@@ -42,6 +42,11 @@
   border-radius: 6px;
 }
 .completion-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: completion-float 5s ease-in-out infinite;
+  box-shadow: 0 3px 18px color-mix(in srgb, var(--accent) 10%, transparent);
   display: flex;
   align-items: center;
   gap: 18px;
@@ -75,46 +80,6 @@
   height: 48px;
   object-fit: contain;
   image-rendering: pixelated;
-}
-.glint-mask {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-mask: var(--item-mask) center / contain no-repeat;
-  mask: var(--item-mask) center / contain no-repeat;
-  mix-blend-mode: screen;
-}
-.glint-mask::before,
-.glint-mask::after {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  background: url('./assets/effects/enchanted_glint_item.png') repeat;
-  background-size: 64px 64px;
-  opacity: 0.65;
-  animation: minecraft-glint 4s linear infinite;
-}
-.glint-mask::after {
-  opacity: 0.35;
-  animation: minecraft-glint-cross 6s linear infinite reverse;
-}
-@keyframes minecraft-glint {
-  from {
-    transform: rotate(-20deg) translate3d(-32px, -32px, 0);
-  }
-  to {
-    transform: rotate(-20deg) translate3d(32px, 32px, 0);
-  }
-}
-@keyframes minecraft-glint-cross {
-  from {
-    transform: rotate(30deg) translate3d(-32px, -32px, 0);
-  }
-  to {
-    transform: rotate(30deg) translate3d(32px, 32px, 0);
-  }
 }
 .finish-particles {
   position: absolute;
@@ -169,6 +134,89 @@
 @media print {
   .share-dialog,
   #share {
+    display: none;
+  }
+}
+
+/* A gentle lift and sweep belong to the completion card; the item stays unmodified. */
+.completion-card > * {
+  position: relative;
+  z-index: 1;
+}
+.completion-card::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  top: -50%;
+  bottom: -50%;
+  left: -40%;
+  width: 35%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 20%, transparent),
+    transparent
+  );
+  animation: completion-sweep 6s ease-in-out infinite;
+}
+@keyframes completion-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes completion-sweep {
+  0%,
+  15% {
+    transform: translateX(0) skewX(-20deg);
+    opacity: 0;
+  }
+  30%,
+  55% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    transform: translateX(450%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+.step-complete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  margin: 0 0 14px;
+  padding: 10px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.step-complete:hover {
+  border-color: var(--accent);
+}
+.step-complete:active {
+  transform: scale(0.99);
+}
+.step-complete[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--muted);
+}
+.check-step.done {
+  opacity: 1;
+  border-color: var(--accent-border);
+}
+.check-step.done .anvil-slots {
+  opacity: 0.7;
+}
+@media print {
+  .step-complete {
     display: none;
   }
 }

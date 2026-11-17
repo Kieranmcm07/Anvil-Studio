@@ -18,13 +18,15 @@ export function playSound(name) {
 export function setupSounds() {
   const toggle = document.querySelector('#sound-enabled');
   const numberValues = new WeakMap();
+  const selectValues = new WeakMap();
+  document.querySelectorAll('select').forEach((select) => selectValues.set(select, select.value));
   const controlTimes = new WeakMap();
   const numberSelector = '#item-uses, [data-book-uses]';
   document
     .querySelectorAll(numberSelector)
     .forEach((input) => numberValues.set(input, input.value));
   function controlClick(control) {
-    // Focus, click and native-select change can describe one activation.
+    // Focus and click can describe the same text-field activation.
     const now = Date.now();
     if (now - (controlTimes.get(control) ?? -Infinity) < 90) return;
     controlTimes.set(control, now);
@@ -49,9 +51,15 @@ export function setupSounds() {
     'click',
     (event) => {
       const control = event.target.closest(
-        'button, summary, a[href], select, input[type="search"], input[type="text"], textarea'
+        'button, summary, a[href], input[type="search"], input[type="text"], textarea'
       );
-      if (!control || control.disabled || control.id === 'calculate') return;
+      if (
+        !control ||
+        control.disabled ||
+        control.id === 'calculate' ||
+        control.hasAttribute('data-complete')
+      )
+        return;
       controlClick(control);
     },
     true
@@ -59,13 +67,21 @@ export function setupSounds() {
   document.addEventListener('focusin', (event) => {
     const input = event.target;
     if (input.matches(numberSelector)) numberValues.set(input, input.value);
-    if (input.matches('input[type="search"], input[type="text"], select, textarea'))
-      controlClick(input);
+    if (input.matches('select')) selectValues.set(input, input.value);
+    if (input.matches('input[type="search"], input[type="text"], textarea')) controlClick(input);
+  });
+  document.addEventListener('pointerdown', (event) => {
+    const select = event.target.closest('select');
+    if (select) selectValues.set(select, select.value);
   });
   document.addEventListener('change', (event) => {
     const input = event.target;
     if (input.disabled || input.id === 'sound-enabled') return;
-    if (input.matches('select')) controlClick(input);
+    if (input.matches('select')) {
+      const previous = selectValues.get(input);
+      selectValues.set(input, input.value);
+      if (previous !== input.value) playSound('click');
+    }
     if (input.matches('input[type="checkbox"]') && (!input.dataset.complete || !input.checked))
       playSound('click');
   });

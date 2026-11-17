@@ -50,12 +50,3 @@ Java sounds downloaded from Mojang's official asset servers using the
 Exact URLs and verified SHA-1 hashes are in [sounds/sources.json](sounds/sources.json).
 These game assets belong to their respective rights holders and are not covered
 by this project's MIT code license. Sound is optional and disabled initially.
-
-## Enchantment glint
-
-The finished item uses Minecraft's original purple
-[enchanted_glint_item.png](https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/misc/enchanted_glint_item.png)
-texture, masked to the item silhouette with two moving layers. This is a browser
-recreation of the effect, not Minecraft's rendering engine.
-The unchanged texture's SHA-256 is recorded in [effects/sources.json](effects/sources.json).
-This Minecraft asset is not covered by the project's MIT code license.

@@ -7,7 +7,6 @@ import { playSound } from './sounds.js';
 
 let result = null;
 let needsUpdate = false;
-let celebrated = false;
 let context = null;
 let zoom = 1;
 let fitGraph = true;
@@ -23,7 +22,6 @@ export function showPlan(plan, settings) {
   fitGraph = true;
   activeStep = 1;
   completed.clear();
-  celebrated = false;
   setGraphMode('step');
   renderResult();
 }
@@ -33,7 +31,6 @@ export function clearPlan({ fresh = false } = {}) {
   result = null;
   context = null;
   completed.clear();
-  celebrated = false;
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
     clearStat($('#' + id), { immediate: fresh });
   }
@@ -301,15 +298,17 @@ function renderSteps() {
         <h3><span class="step-number">${s.step}</span>${stepHeading(s)}</h3>
         <span class="step-cost">${s.cost} levels</span>
       </div>
+      <button type="button" class="step-complete" data-complete="${s.step}"
+        aria-pressed="${completed.has(s.step)}" aria-label="${completed.has(s.step) ? 'Undo step ' + s.step : 'Mark step ' + s.step + ' done'}">
+        ${completed.has(s.step) ? '✓ Done · Undo' : 'Mark step done'}
+      </button>
       ${anvilSlots(s)}
       <div class="step-bottom">
         <details class="result-enchantments">
           <summary>Result enchantments</summary>
           <p>${nodeEnchants(s).map(escape).join(' · ')}</p>
         </details>
-        <label class="done-control">
-          <input type="checkbox" data-complete="${s.step}" ${completed.has(s.step) ? 'checked' : ''}>Done
-        </label>
+
       </div>
     </article>`
       )
@@ -324,7 +323,7 @@ function completionCard() {
       `<i style="--x: ${Math.round(Math.cos((i * Math.PI) / 6) * 95)}px; --y: ${Math.round(Math.sin((i * Math.PI) / 6) * 60)}px; --turn: ${i * 45}deg"></i>`
   ).join('');
   return `<div id="completion" class="completion-card" role="status" hidden>
-    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="glint-mask" style="--item-mask: url('${itemIcon(context.item === 'book' ? 'enchanted_book' : context.item)}')"></span><span class="finish-particles">${particles}</span></div>
+    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="finish-particles">${particles}</span></div>
     <div><h3>Your ${escape(name)} is ready!</h3><p>Every anvil step is done. Enjoy your gear.</p></div>
   </div>`;
 }
@@ -449,23 +448,29 @@ $('#graph').addEventListener('keydown', (e) => {
     e.target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   }
 });
-$('#steps-view').addEventListener('change', (e) => {
-  if (!e.target.dataset.complete) return;
-  const step = Number(e.target.dataset.complete);
-  if (e.target.checked) completed.add(step);
+$('#steps-view').addEventListener('click', (e) => {
+  const button = e.target.closest('[data-complete]');
+  if (!button || !result) return;
+  const step = Number(button.dataset.complete);
+  if (!result.steps.some((s) => s.step === step)) return;
+  const wasComplete = completed.size === result.steps.length;
+  const done = !completed.has(step);
+  if (done) completed.add(step);
   else completed.delete(step);
-  e.target.closest('.check-step').classList.toggle('done', e.target.checked);
+  button.setAttribute('aria-pressed', String(done));
+  button.setAttribute('aria-label', done ? 'Undo step ' + step : 'Mark step ' + step + ' done');
+  button.textContent = done ? '✓ Done · Undo' : 'Mark step done';
+  button.closest('.check-step').classList.toggle('done', done);
   updateCount($('#step-progress'), `${completed.size} of ${result.steps.length} done`);
   const allDone = completed.size === result.steps.length;
   const card = $('#completion');
   card.hidden = !allDone;
   if (!allDone) card.classList.remove('celebrate');
-  if (allDone && !celebrated) {
-    celebrated = true;
+  if (allDone && !wasComplete) {
     card.classList.add('celebrate');
     reveal(card);
     playSound('levelup');
-  } else if (e.target.checked) playSound('step');
+  } else playSound(done ? 'step' : 'click');
 });
 $('#zoom-in').addEventListener('click', () => {
   zoom = Math.min(3, zoom + 0.25);
