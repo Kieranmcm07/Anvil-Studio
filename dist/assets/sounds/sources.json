@@ -4,14 +4,19 @@
     "sha1": "ec4f4d122ab7c5d44e48419de0e3de1b0922514d",
     "original": "minecraft/sounds/random/click.ogg"
   },
-  "anvil": {
-    "url": "https://resources.download.minecraft.net/88/88a792430dfff97582ab49b8dc9477cd9d4e5ebb",
-    "sha1": "88a792430dfff97582ab49b8dc9477cd9d4e5ebb",
-    "original": "minecraft/sounds/random/anvil_use.ogg"
-  },
   "levelup": {
     "url": "https://resources.download.minecraft.net/b9/b9c60e807ba770e8c4a2b1bae81d51813dc64b6c",
     "sha1": "b9c60e807ba770e8c4a2b1bae81d51813dc64b6c",
     "original": "minecraft/sounds/random/levelup.ogg"
+  },
+  "step": {
+    "url": "https://resources.download.minecraft.net/e9/e9833a1512b57bcf88ac4fdcc8df4e5a7e9d701d",
+    "sha1": "e9833a1512b57bcf88ac4fdcc8df4e5a7e9d701d",
+    "original": "minecraft/sounds/random/orb.ogg"
+  },
+  "enchant": {
+    "url": "https://resources.download.minecraft.net/f0/f05f55328f2b98b3c7d881fcdef7e7964d8082fa",
+    "sha1": "f05f55328f2b98b3c7d881fcdef7e7964d8082fa",
+    "original": "minecraft/sounds/block/enchantment_table/enchant1.ogg"
   }
 }

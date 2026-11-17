@@ -324,7 +324,7 @@ function completionCard() {
       `<i style="--x: ${Math.round(Math.cos((i * Math.PI) / 6) * 95)}px; --y: ${Math.round(Math.sin((i * Math.PI) / 6) * 60)}px; --turn: ${i * 45}deg"></i>`
   ).join('');
   return `<div id="completion" class="completion-card" role="status" hidden>
-    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="finish-particles">${particles}</span></div>
+    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="glint-mask" style="--item-mask: url('${itemIcon(context.item === 'book' ? 'enchanted_book' : context.item)}')"></span><span class="finish-particles">${particles}</span></div>
     <div><h3>Your ${escape(name)} is ready!</h3><p>Every anvil step is done. Enjoy your gear.</p></div>
   </div>`;
 }
@@ -465,7 +465,7 @@ $('#steps-view').addEventListener('change', (e) => {
     card.classList.add('celebrate');
     reveal(card);
     playSound('levelup');
-  } else if (e.target.checked) playSound('anvil');
+  } else if (e.target.checked) playSound('step');
 });
 $('#zoom-in').addEventListener('click', () => {
   zoom = Math.min(3, zoom + 0.25);

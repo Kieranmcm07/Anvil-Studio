@@ -76,8 +76,45 @@
   object-fit: contain;
   image-rendering: pixelated;
 }
-.celebrate .finished-icon img {
-  animation: finish-glint 1.6s ease-out;
+.glint-mask {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: var(--item-mask) center / contain no-repeat;
+  mask: var(--item-mask) center / contain no-repeat;
+  mix-blend-mode: screen;
+}
+.glint-mask::before,
+.glint-mask::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: url('./assets/effects/enchanted_glint_item.png') repeat;
+  background-size: 64px 64px;
+  opacity: 0.65;
+  animation: minecraft-glint 4s linear infinite;
+}
+.glint-mask::after {
+  opacity: 0.35;
+  animation: minecraft-glint-cross 6s linear infinite reverse;
+}
+@keyframes minecraft-glint {
+  from {
+    transform: rotate(-20deg) translate3d(-32px, -32px, 0);
+  }
+  to {
+    transform: rotate(-20deg) translate3d(32px, 32px, 0);
+  }
+}
+@keyframes minecraft-glint-cross {
+  from {
+    transform: rotate(30deg) translate3d(-32px, -32px, 0);
+  }
+  to {
+    transform: rotate(30deg) translate3d(32px, 32px, 0);
+  }
 }
 .finish-particles {
   position: absolute;
@@ -110,21 +147,6 @@
   100% {
     opacity: 0;
     transform: translate(var(--x), var(--y)) rotate(var(--turn));
-  }
-}
-@keyframes finish-glint {
-  0%,
-  100% {
-    filter: none;
-    transform: scale(1);
-  }
-  35% {
-    filter: drop-shadow(0 0 7px var(--purple)) brightness(1.7);
-    transform: scale(1.13);
-  }
-  65% {
-    filter: drop-shadow(0 0 5px var(--accent));
-    transform: scale(1);
   }
 }
 @media (max-width: 580px) {

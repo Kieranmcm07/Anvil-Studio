@@ -4,7 +4,7 @@ import { clearPlan, showPlan } from './plan-view.js';
 import { renderPicker } from './enchantment-picker.js';
 import { setupGithubLinks } from './config.js';
 import { setupThemes } from './themes.js';
-import { setupSounds } from './sounds.js';
+import { setupSounds, playSound } from './sounds.js';
 import { readSharedPlan, setupSharing } from './share.js';
 import { reveal, setupMotion, motionEnabled } from './motion.js';
 
@@ -174,6 +174,7 @@ function calculate() {
     selected.slice(i + 1).some(([other]) => conflicts(id, other, profile(), raw))
   );
   notice('');
+  playSound('enchant');
   $('#calculate').disabled = true;
   $('#calculate').firstElementChild.textContent = 'Calculating…';
   worker?.terminate();

@@ -1,23 +1,35 @@
+import { nudgeNumber } from './motion.js';
+
 const STORAGE_KEY = 'anvil-studio-sound';
+const volumes = { click: 0.18, step: 0.12, enchant: 0.2, levelup: 0.18 };
 let enabled = false;
 let current = null;
-let lastClick = 0;
 
 export function playSound(name) {
-  if (!enabled || !['click', 'anvil', 'levelup'].includes(name)) return;
-  if (name === 'click') {
-    if (Date.now() - lastClick < 100) return;
-    lastClick = Date.now();
-  }
+  if (!enabled || !Object.hasOwn(volumes, name)) return;
   try {
     current?.pause();
     current = new window.Audio(new URL('./assets/sounds/' + name + '.ogg', import.meta.url).href);
-    current.volume = name === 'click' ? 0.18 : 0.3;
+    current.volume = volumes[name];
     current.play()?.catch(() => {}); // A blocked sound never interrupts the planner.
   } catch {}
 }
+
 export function setupSounds() {
   const toggle = document.querySelector('#sound-enabled');
+  const numberValues = new WeakMap();
+  const controlTimes = new WeakMap();
+  const numberSelector = '#item-uses, [data-book-uses]';
+  document
+    .querySelectorAll(numberSelector)
+    .forEach((input) => numberValues.set(input, input.value));
+  function controlClick(control) {
+    // Focus, click and native-select change can describe one activation.
+    const now = Date.now();
+    if (now - (controlTimes.get(control) ?? -Infinity) < 90) return;
+    controlTimes.set(control, now);
+    playSound('click');
+  }
   try {
     enabled = localStorage.getItem(STORAGE_KEY) === 'true';
   } catch {}
@@ -33,8 +45,40 @@ export function setupSounds() {
       current = null;
     }
   });
-  document.addEventListener('click', (event) => {
-    const control = event.target.closest('button, summary');
-    if (control && !control.disabled) playSound('click');
+  document.addEventListener(
+    'click',
+    (event) => {
+      const control = event.target.closest(
+        'button, summary, a[href], select, input[type="search"], input[type="text"], textarea'
+      );
+      if (!control || control.disabled || control.id === 'calculate') return;
+      controlClick(control);
+    },
+    true
+  );
+  document.addEventListener('focusin', (event) => {
+    const input = event.target;
+    if (input.matches(numberSelector)) numberValues.set(input, input.value);
+    if (input.matches('input[type="search"], input[type="text"], select, textarea'))
+      controlClick(input);
   });
+  document.addEventListener('change', (event) => {
+    const input = event.target;
+    if (input.disabled || input.id === 'sound-enabled') return;
+    if (input.matches('select')) controlClick(input);
+    if (input.matches('input[type="checkbox"]') && (!input.dataset.complete || !input.checked))
+      playSound('click');
+  });
+  function numberFeedback(event) {
+    const input = event.target;
+    if (!input.matches(numberSelector) || input.disabled) return;
+    const previous = numberValues.get(input) ?? input.defaultValue;
+    numberValues.set(input, input.value);
+    if (input.value === previous || input.value === '' || !Number.isFinite(input.valueAsNumber))
+      return;
+    nudgeNumber(input, input.valueAsNumber >= Number(previous) ? 1 : -1);
+    playSound('click');
+  }
+  document.addEventListener('input', numberFeedback);
+  document.addEventListener('change', numberFeedback);
 }

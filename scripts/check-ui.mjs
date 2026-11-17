@@ -58,6 +58,7 @@ function check(value, message) {
 }
 
 const playedSounds = [];
+const soundVolumes = [];
 let pausedSounds = 0;
 window.Audio = class {
   constructor(src) {
@@ -65,6 +66,7 @@ window.Audio = class {
   }
   play() {
     playedSounds.push(this.src);
+    soundVolumes.push({ src: this.src, volume: this.volume });
     return Promise.resolve();
   }
   pause() {
@@ -423,9 +425,9 @@ check(
   'Finishing every step celebrates the completed item'
 );
 check(
-  playedSounds.some((src) => src.endsWith('/anvil.ogg')) &&
+  playedSounds.some((src) => src.endsWith('/step.ogg')) &&
     playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
-  'Steps play the anvil sound and completion plays one level-up sound'
+  'Steps play the quiet XP sound and completion plays one level-up sound'
 );
 click('[data-complete="6"]');
 check($('#completion').hidden, 'Unchecking a step hides the completion message');
@@ -435,6 +437,92 @@ check(
     playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
   'Reticking a step does not replay the celebration'
 );
+
+check(
+  $('#completion .glint-mask').style.getPropertyValue('--item-mask').includes('diamond_helmet.png'),
+  'Original glint is masked to the completed item'
+);
+check(
+  soundVolumes
+    .filter((sound) => sound.src.endsWith('/step.ogg'))
+    .every((sound) => sound.volume <= 0.12),
+  'Step confirmations stay at a quiet volume'
+);
+for (const selector of [
+  '#search',
+  '#version',
+  '#repository-link',
+  '#projects-link',
+  '#creator-link',
+  '#help a[href]',
+  '#sources-button',
+]) {
+  const control = $(selector);
+  control.addEventListener('click', (event) => event.preventDefault(), { once: true });
+  const before = playedSounds.length;
+  click(selector);
+  check(
+    playedSounds.length === before + 1 && playedSounds.at(-1).endsWith('/click.ogg'),
+    selector + ': activation plays one click'
+  );
+}
+if ($('#help').open) $('#help').close();
+let beforeCheckbox = playedSounds.length;
+click('#show-curses');
+check(playedSounds.length === beforeCheckbox + 1, 'Checking an option plays exactly one sound');
+beforeCheckbox = playedSounds.length;
+click('#show-curses');
+check(playedSounds.length === beforeCheckbox + 1, 'Unchecking an option also plays one sound');
+const beforeCalculation = playedSounds.length;
+click('#calculate');
+await tick();
+check(
+  playedSounds.length === beforeCalculation + 1 && playedSounds.at(-1).endsWith('/enchant.ogg'),
+  'Show my steps plays only the original enchanting-table sound'
+);
+const workInput = $('#item-uses');
+const workAnimate = workInput.animate.bind(workInput);
+const workFrames = [];
+workInput.animate = (...args) => {
+  workFrames.push(args[0]);
+  return workAnimate(...args);
+};
+function inputAndChange(input, value) {
+  input.value = value;
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  input.dispatchEvent(new window.Event('change', { bubbles: true }));
+}
+let beforeNumber = playedSounds.length;
+inputAndChange(workInput, '2');
+check(
+  playedSounds.length === beforeNumber + 1 && workFrames.at(-1)[1].transform === 'translateY(-4px)',
+  'Increasing prior work moves up and sounds once across input/change'
+);
+beforeNumber = playedSounds.length;
+inputAndChange(workInput, '1');
+check(
+  playedSounds.length === beforeNumber + 1 && workFrames.at(-1)[1].transform === 'translateY(4px)',
+  'Decreasing prior work moves down and sounds once'
+);
+const frameCount = workFrames.length;
+beforeNumber = playedSounds.length;
+inputAndChange(workInput, '1');
+check(
+  workFrames.length === frameCount && playedSounds.length === beforeNumber,
+  'An unchanged number stays quiet and still'
+);
+click('#theme-motion');
+inputAndChange(workInput, '3');
+check(workFrames.length === frameCount, 'Prior-work animation respects the motion toggle');
+click('#theme-motion');
+workInput.animate = workAnimate;
+click('#book-history');
+const bookWork = $('[data-book-uses]');
+beforeNumber = playedSounds.length;
+inputAndChange(bookWork, '1');
+check(playedSounds.length === beforeNumber + 1, 'Dynamic book prior-work controls also sound once');
+click('#book-history');
+
 click('#sound-enabled');
 const soundsBefore = playedSounds.length;
 click('#steps-tab');

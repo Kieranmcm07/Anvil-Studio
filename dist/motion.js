@@ -39,6 +39,22 @@ function tap(element) {
   running.add(animation);
   animation.finished.catch(() => {}).finally(() => running.delete(animation));
 }
+const numberAnimations = new WeakMap();
+export function nudgeNumber(element, direction) {
+  numberAnimations.get(element)?.cancel();
+  if (!motionEnabled() || !element.animate) return;
+  const animation = element.animate(
+    [
+      { transform: 'translateY(0)' },
+      { transform: 'translateY(' + (direction > 0 ? -4 : 4) + 'px)', offset: 0.4 },
+      { transform: 'translateY(0)' },
+    ],
+    { duration: 360, easing: 'ease-out' }
+  );
+  numberAnimations.set(element, animation);
+  running.add(animation);
+  animation.finished.catch(() => {}).finally(() => running.delete(animation));
+}
 export function setupMotion() {
   document.addEventListener('click', (event) => {
     const button = event.target.closest('#reset, #preset');
