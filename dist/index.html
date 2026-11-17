@@ -74,12 +74,30 @@
         width="256"
         height="256"
       />
-      <img class="background-mob mob-fox" data-mob="fox"
-        data-mob-src="./assets/mobs/fox.png" alt="" width="256" height="256" />
-      <img class="background-mob mob-shulker" data-mob="shulker"
-        data-mob-src="./assets/mobs/shulker.png" alt="" width="256" height="256" />
-      <img class="background-mob mob-dolphin" data-mob="dolphin"
-        data-mob-src="./assets/mobs/dolphin.png" alt="" width="256" height="256" />
+      <img
+        class="background-mob mob-fox"
+        data-mob="fox"
+        data-mob-src="./assets/mobs/fox.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-shulker"
+        data-mob="shulker"
+        data-mob-src="./assets/mobs/shulker.png"
+        alt=""
+        width="256"
+        height="256"
+      />
+      <img
+        class="background-mob mob-dolphin"
+        data-mob="dolphin"
+        data-mob-src="./assets/mobs/dolphin.png"
+        alt=""
+        width="256"
+        height="256"
+      />
     </div>
     <header class="topbar">
       <a class="brand" href="./" aria-label="Anvil Studio home"
@@ -178,8 +196,23 @@
             <button id="reset" class="text-button muted">Reset</button>
           </div>
           <div class="edition-toggle" role="group" aria-label="Minecraft edition">
-            <button data-edition="java" class="active" aria-pressed="true">Java Edition</button
-            ><button data-edition="bedrock" aria-pressed="false">Bedrock Edition</button>
+            <button data-edition="java" class="active" aria-pressed="true">
+              <img
+                class="ui-item"
+                src="./assets/items/grass_block.png"
+                alt=""
+                width="20"
+                height="20"
+              />Java Edition</button
+            ><button data-edition="bedrock" aria-pressed="false">
+              <img
+                class="ui-item"
+                src="./assets/items/bedrock.png"
+                alt=""
+                width="20"
+                height="20"
+              />Bedrock Edition
+            </button>
           </div>
           <div class="two-fields">
             <label>GAME VERSION<select id="version"></select></label
@@ -418,88 +451,197 @@
         <span class="eyebrow">ANVIL STUDIO</span
         ><button id="close-help" class="icon-button" aria-label="Close help">×</button>
       </div>
-      <h2>How to use the planner</h2>
-      <p>
-        Choose your edition, version and equipment. Each selected enchantment represents
-        <strong>one separate book already at that level</strong>. Your base item starts unenchanted;
-        set its prior-work count if it has been repaired before.
-      </p>
-      <h3>How the costs work</h3>
-      <p>
-        Each operation adds both inputs’ prior-work penalties to the cost of transferring the right
-        book’s enchantments. The penalty is 2<sup>n</sup> − 1, where n is the prior-work count.
-        Survival accepts costs up to 39 levels.
-      </p>
-      <h3>Levels and XP are different</h3>
-      <p>
-        “Fewest total levels” minimizes the sum of the displayed anvil costs. “Least XP” assumes you
-        earn exactly the required levels from level 0 before each operation and spend them back to
-        0. It is not a quote for spending from an existing high-level XP bar.
-      </p>
-      <h3>What this planner covers</h3>
-      <p>
-        Exact ordering for up to 13 distinct enchanted books. It does not combine duplicate
-        lower-level books, import already-enchanted equipment, repair durability, or rename items.
-        Enchantment availability, conflicts and book costs follow the selected profile. Bedrock has
-        no Sweeping Edge and uses a lower Impaling book multiplier.
-      </p>
-      <h3>Making a Wind Burst book</h3>
-      <p>
-        Wind Burst drops at level I. For level II, combine two level-I books. For level III, make
-        two level-II books and combine them. That takes four level-I books in total. Make this book
-        before following the plan: the displayed total excludes those preparation steps, but the
-        later costs include the finished book’s prior-work penalty.
-      </p>
-      <p>
-        Java 1.14 through 1.14.3 pre-release 1 allows stacked protection. Java 1.9–1.11 allows
-        Mending with Infinity; 1.11.1 requires Infinity on the left when adding Mending. These rules
-        are separate from the incompatible-enchantments override.
-      </p>
-      <h3>Rules & data sources</h3>
-      <ul>
+      <h2>Three steps to better gear</h2>
+      <ol class="help-steps">
         <li>
-          <a href="./assets/CREDITS.md" target="_blank" rel="noreferrer"
-            >Original Minecraft item artwork · sources and credits ↗</a
-          >
+          <img
+            class="item-sprite"
+            src="./assets/items/diamond_helmet.png"
+            alt=""
+            width="40"
+            height="40"
+          />
+          <div>
+            <h3>Choose your gear</h3>
+            <p>Pick your edition, version and item. Start with unenchanted gear.</p>
+          </div>
         </li>
         <li>
-          <a
-            href="https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3"
-            target="_blank"
-            rel="noreferrer"
-            >Mojang · Java 26.3 release notes ↗</a
-          >
+          <img
+            class="item-sprite"
+            src="./assets/items/enchanted_book.png"
+            alt=""
+            width="40"
+            height="40"
+          />
+          <div>
+            <h3>Pick your enchantments</h3>
+            <p>
+              Each choice is one enchanted book, already at that level. Use
+              <strong>Recommended</strong> for a starting selection.
+            </p>
+          </div>
         </li>
         <li>
-          <a
-            href="https://github.com/misode/mcmeta/tree/26.3-data/data/minecraft/enchantment"
-            target="_blank"
-            rel="noreferrer"
-            >Version-pinned vanilla enchantment data (26.3) ↗</a
-          >
+          <img class="item-sprite" src="./assets/items/anvil.png" alt="" width="40" height="40" />
+          <div>
+            <h3>Follow your anvil steps</h3>
+            <p>
+              Click <strong>Show my steps</strong>. Keep the left and right slots as shown, then
+              tick off each step. The graph shows how they connect.
+            </p>
+          </div>
         </li>
-        <li>
-          <a
-            href="https://learn.microsoft.com/en-us/minecraft/creator/documents/introtoenchantments"
-            target="_blank"
-            rel="noreferrer"
-            >Microsoft · Bedrock enchantments ↗</a
-          >
-        </li>
-        <li>
-          <a href="https://minecraft.wiki/w/Anvil_mechanics" target="_blank" rel="noreferrer"
-            >Minecraft Wiki · Anvil mechanics and edition differences ↗</a
-          >
-        </li>
-        <li>
-          <a
-            href="https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-3"
-            target="_blank"
-            rel="noreferrer"
-            >Mojang · 1.14.3 protection compatibility change ↗</a
-          >
-        </li>
-      </ul>
+      </ol>
+      <p class="help-tip">
+        <img
+          class="ui-item"
+          src="./assets/items/experience_bottle.png"
+          alt=""
+          width="20"
+          height="20"
+        />
+        Each Survival step must cost <strong>39 levels or less</strong>.
+      </p>
+      <details class="help-details">
+        <summary>
+          <img
+            class="ui-item"
+            src="./assets/items/book.png"
+            alt=""
+            width="20"
+            height="20"
+          />Combining books
+        </summary>
+        <p>
+          Choose <strong>Book</strong> to combine your selected enchanted books into one. No blank
+          book is needed. With just one enchantment selected, your book is already ready.
+        </p>
+      </details>
+      <details class="help-details">
+        <summary>
+          <img
+            class="ui-item"
+            src="./assets/items/anvil.png"
+            alt=""
+            width="20"
+            height="20"
+          />Already used your item or books?
+        </summary>
+        <p>
+          Open <strong>More options</strong> and set their prior-work counts. Use 0 for untouched
+          items. After a combine, the new count is the higher input count plus 1.
+        </p>
+        <p>
+          The cost includes both inputs’ work penalties, plus the enchantments on the right. A work
+          count of n gives a penalty of 2ⁿ − 1.
+        </p>
+      </details>
+      <details class="help-details">
+        <summary>
+          <img
+            class="ui-item"
+            src="./assets/items/experience_bottle.png"
+            alt=""
+            width="20"
+            height="20"
+          />Levels or XP?
+        </summary>
+        <p><strong>Fewest total levels</strong> adds up the level costs shown by the anvil.</p>
+        <p>
+          <strong>Least XP</strong> assumes you earn exactly enough levels for each step, starting
+          from level 0 every time. Your cost differs if you spend from a higher level.
+        </p>
+      </details>
+      <details class="help-details">
+        <summary>
+          <img class="ui-item" src="./assets/items/mace.png" alt="" width="20" height="20" />Making
+          a Wind Burst book
+        </summary>
+        <p>
+          Wind Burst drops at level I. Combine two level-I books for level II. For level III, make
+          two level-II books and combine them: four level-I books in total.
+        </p>
+        <p>
+          Make it first. The plan includes its prior-work penalty, but excludes the levels spent
+          preparing it.
+        </p>
+      </details>
+      <details class="help-details">
+        <summary>
+          <img
+            class="ui-item"
+            src="./assets/items/redstone.png"
+            alt=""
+            width="20"
+            height="20"
+          />Limits and older versions
+        </summary>
+        <p>
+          The planner handles up to 13 different books. It does not upgrade duplicate lower-level
+          books, repair durability, rename gear or import existing enchantments.
+        </p>
+        <p>
+          Edition and version control the available enchantments and conflicts. Historical
+          protection stacking and the Mending/Infinity exceptions are applied automatically. The
+          1.11.1 exception requires Infinity on the left.
+        </p>
+        <p>
+          Allowing other incompatible enchantments produces a theoretical plan that needs commands
+          or mods.
+        </p>
+      </details>
+      <details class="help-details">
+        <summary>
+          <img class="ui-item" src="./assets/items/paper.png" alt="" width="20" height="20" />Rules
+          & data sources
+        </summary>
+
+        <ul>
+          <li>
+            <a href="./assets/CREDITS.md" target="_blank" rel="noreferrer"
+              >Original Minecraft item artwork · sources and credits ↗</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3"
+              target="_blank"
+              rel="noreferrer"
+              >Mojang · Java 26.3 release notes ↗</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://github.com/misode/mcmeta/tree/26.3-data/data/minecraft/enchantment"
+              target="_blank"
+              rel="noreferrer"
+              >Version-pinned vanilla enchantment data (26.3) ↗</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://learn.microsoft.com/en-us/minecraft/creator/documents/introtoenchantments"
+              target="_blank"
+              rel="noreferrer"
+              >Microsoft · Bedrock enchantments ↗</a
+            >
+          </li>
+          <li>
+            <a href="https://minecraft.wiki/w/Anvil_mechanics" target="_blank" rel="noreferrer"
+              >Minecraft Wiki · Anvil mechanics and edition differences ↗</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-3"
+              target="_blank"
+              rel="noreferrer"
+              >Mojang · 1.14.3 protection compatibility change ↗</a
+            >
+          </li>
+        </ul>
+      </details>
       <p class="muted">
         Java 26.3 and Bedrock 26.3 are separate releases. No accounts or network connection are
         needed after loading. Your theme is saved in this browser. The planner starts fresh on each

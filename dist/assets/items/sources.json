@@ -130,5 +130,17 @@
   "redstone": {
     "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/redstone.png",
     "sha256": "6d0e6a1fd54142cd3de649e1100c428733512b322a0b0a530f62eae9f86881ec"
+  },
+  "turtle_helmet": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/turtle_helmet.png",
+    "sha256": "0e178a0c477e486bbca03a202d2c0e14ce8c3881cecc7626c73fda2d3d92d902"
+  },
+  "brush": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/item/brush.png",
+    "sha256": "5142d5d3ce600efe359a1b3f2f80f3bd9505e7dc7b31cda4157ed69a0b01adc2"
+  },
+  "bedrock": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/item-assets/BEDROCK.png",
+    "sha256": "63973feb9a956150beb05f8c720fd95b5428398aaf3ceacbca328a1c59efd5e8"
   }
 }

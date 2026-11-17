@@ -87,7 +87,7 @@ for (let i = 0; i < 3; i++) {
   $('#theme-picker').open = false;
   await tick();
 }
-check(popupReveals === 0, 'Theme popup uses one CSS entrance, without a competing JS animation');
+check(popupReveals === 3, 'Theme popup gets exactly one entrance per opening');
 themeMenu.animate = originalAnimate;
 for (const theme of ['amethyst', 'ocean', 'ember', 'overworld', 'forest']) {
   $('#theme-picker').open = true;
@@ -126,9 +126,15 @@ for (let i = 0; i < 3; i++) {
   click('[data-theme-choice="ocean"]');
   click('[data-theme-choice="ember"]');
 }
-check(!$('.mob-dolphin').classList.contains('is-visible'), 'Rapid theme changes hide the outgoing ocean mob');
+check(
+  !$('.mob-dolphin').classList.contains('is-visible'),
+  'Rapid theme changes hide the outgoing ocean mob'
+);
 check($('.mob-blaze').classList.contains('is-visible'), 'Rapid theme changes keep the final scene');
-check(!$('.mob-axolotl').classList.contains('is-visible'), 'Overworld axolotl stays out of the colour themes');
+check(
+  !$('.mob-axolotl').classList.contains('is-visible'),
+  'Overworld axolotl stays out of the colour themes'
+);
 click('[data-theme-choice="forest"]');
 click('#theme-motion');
 check(document.documentElement.dataset.motion === 'off', 'Animation toggle stops motion');
@@ -258,8 +264,8 @@ click('#graph-mode');
 check($('.blueprint').dataset.graphMode === 'tree', 'Full tree mode opens');
 const naturalWidth = parseFloat($('#flow-svg').style.width);
 check(
-  naturalWidth === Number($('#flow-svg').dataset.naturalWidth),
-  'Full tree starts at readable natural size'
+  naturalWidth <= 240 && parseFloat($('#flow-svg').style.height) <= 402,
+  'Full tree initially fits both dimensions, including the finished item'
 );
 let panelWidth = 360;
 Object.defineProperty($('#graph'), 'clientWidth', { configurable: true, get: () => panelWidth });
@@ -407,6 +413,71 @@ setupGithubLinks();
 check($('#repository-link').hidden, 'An empty repository URL hides the link');
 site.repositoryUrl = 'https://github.com/Kieranmcm07/Anvil-Studio';
 setupGithubLinks();
+// Active tabs do not replay entrances or disturb the plan.
+click('#flow-tab');
+let viewAnimations = 0;
+const flowView = $('#flow-view');
+const originalViewAnimate = flowView.animate.bind(flowView);
+flowView.animate = (...args) => {
+  viewAnimations++;
+  return originalViewAnimate(...args);
+};
+click('#flow-tab');
+click('#flow-tab');
+check(viewAnimations === 0, 'Repeated clicks on the active graph tab do not replay animation');
+flowView.animate = originalViewAnimate;
+
+for (const item of ['axe', 'shovel']) {
+  change('#item', item);
+  click('#preset');
+  check(
+    $('[data-enchant="silk_touch"]').getAttribute('aria-pressed') === 'true',
+    item + ': recommends Silk Touch'
+  );
+  check(
+    $('[data-enchant="fortune"][data-level="3"]').getAttribute('aria-pressed') === 'false',
+    item + ': leaves Fortune unselected'
+  );
+}
+for (const item of ['turtle_helmet', 'brush']) {
+  change('#item', item);
+  click('#preset');
+  click('#calculate');
+  await tick();
+  check(
+    $('#safety-badge').textContent.includes('Survival safe'),
+    item + ': calculates a survival plan'
+  );
+}
+change('#item', 'book');
+check($('#preset').hidden, 'Book mode lets players choose their own combination');
+click('[data-enchant="mending"][data-level="1"]');
+click('#calculate');
+await tick();
+check(
+  $('#stat-steps').textContent === '0' &&
+    $('#steps-view').textContent.includes('No anvil steps needed'),
+  'One enchanted book needs no operations'
+);
+click('[data-enchant="unbreaking"][data-level="3"]');
+click('#calculate');
+await tick();
+check($('#stat-steps').textContent === '1', 'Two enchanted books require exactly one combine');
+check(
+  document.querySelectorAll('#flow-svg image').length === 2,
+  'Book graph has no phantom blank book'
+);
+check(
+  $('#steps-view').textContent.includes('Mending I') &&
+    $('#steps-view').textContent.includes('Unbreaking III'),
+  'Book plan includes both chosen inputs'
+);
+check(
+  document.querySelectorAll('[data-edition] .ui-item').length === 2,
+  'Both editions have Minecraft symbols'
+);
+click('#reset');
+
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
 change('#item', 'shield');

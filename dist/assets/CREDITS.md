@@ -28,7 +28,7 @@ banner at `assets/anvil-banner.svg`. Existing third-party notices still apply.
 
 ## Interface icons and theme backgrounds
 
-The anvil and grass-block interface icons are native inventory renders from
+The anvil, grass-block and bedrock interface icons are native inventory renders from
 [Owen1212055/mc-assets](https://github.com/Owen1212055/mc-assets), pinned to commit
 `271a000189e86e101a1361af6d4266f6201ff726`. Other interface icons use the original
 Java 26.3 item textures from mcmeta, listed in `items/sources.json`.

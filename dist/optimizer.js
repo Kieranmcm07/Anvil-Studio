@@ -33,29 +33,41 @@ export function optimize({
       b.uses > 6
     )
       throw new Error('Invalid book level, cost, or prior-work count.');
-  const n = books.length + 1,
+  const bookOnly = item === 'book';
+  if (bookOnly && !books.length) throw new Error('Select at least one enchanted book.');
+  const n = books.length + (bookOnly ? 0 : 1),
     limit = 1 << n;
   const sums = new Int32Array(limit),
     dp = new Array(limit);
   let mending = 0,
     infinity = 0;
   books.forEach((b, i) => {
-    if (b.id === 'mending') mending = 1 << (i + 1);
-    if (b.id === 'infinity') infinity = 1 << (i + 1);
+    if (b.id === 'mending') mending = 1 << (i + (bookOnly ? 0 : 1));
+    if (b.id === 'infinity') infinity = 1 << (i + (bookOnly ? 0 : 1));
   });
   for (let mask = 1; mask < limit; mask++) {
     const bit = mask & -mask,
       index = 31 - Math.clz32(bit);
-    sums[mask] = sums[mask ^ bit] + (index ? books[index - 1].level * books[index - 1].cost : 0);
+    const b = books[bookOnly ? index : index - 1];
+    sums[mask] = sums[mask ^ bit] + (b ? b.level * b.cost : 0);
   }
   const better = (a, b) =>
     !b ||
     (objective === 'xp' ? a.xp - b.xp || a.total - b.total : a.total - b.total || a.xp - b.xp) < 0;
   for (let i = 0; i < n; i++) {
-    const b = i ? books[i - 1] : null,
+    const b = bookOnly ? books[i] : i ? books[i - 1] : null,
       uses = b ? b.uses : itemUses;
     dp[1 << i] = [
-      { mask: 1 << i, uses, total: 0, xp: 0, peak: 0, cost: 0, leaf: i, label: b ? b.id : item },
+      {
+        mask: 1 << i,
+        uses,
+        total: 0,
+        xp: 0,
+        peak: 0,
+        cost: 0,
+        leaf: bookOnly ? i + 1 : i,
+        label: b ? b.id : item,
+      },
     ];
   }
   for (let mask = 1; mask < limit; mask++) {
@@ -63,7 +75,7 @@ export function optimize({
     const states = [];
     for (let left = (mask - 1) & mask; left; left = (left - 1) & mask) {
       const right = mask ^ left;
-      if (!right || right & 1) continue; // Gear must always occupy the left slot.
+      if (!right || (!bookOnly && right & 1)) continue; // Equipment stays in the left slot.
       // Java 1.11.1's one-direction bow exception: Infinity must be on the left.
       if (legacyBow && left & mending && right & infinity) continue;
       for (const a of dp[left] || [])

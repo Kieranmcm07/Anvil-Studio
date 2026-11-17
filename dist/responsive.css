@@ -624,3 +624,65 @@ dialog {
     container-type: normal;
   }
 }
+
+.edition-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.help-steps {
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+}
+.help-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 0 18px;
+}
+.help-steps h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.help-steps p {
+  margin: 0;
+  line-height: 1.6;
+}
+.help-tip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+.help-details {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.help-details summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.help-details summary::after {
+  content: '+';
+  margin-left: auto;
+  color: var(--accent);
+}
+.help-details[open] summary::after {
+  content: '−';
+}
+.help-details summary::-webkit-details-marker {
+  display: none;
+}
+.help-details p {
+  margin: 8px 0;
+  line-height: 1.65;
+}

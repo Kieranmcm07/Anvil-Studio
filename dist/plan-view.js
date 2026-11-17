@@ -6,7 +6,7 @@ import { reveal } from './motion.js';
 let result = null;
 let context = null;
 let zoom = 1;
-let fitGraph = false;
+let fitGraph = true;
 let activeStep = 1;
 let currentView = 'steps';
 const completed = new Set();
@@ -15,7 +15,7 @@ export function showPlan(plan, settings) {
   result = plan;
   context = settings;
   zoom = 1;
-  fitGraph = false;
+  fitGraph = true;
   activeStep = 1;
   completed.clear();
   setGraphMode('step');
@@ -56,22 +56,26 @@ export function clearPlan() {
   setView('steps');
 }
 
+function isEquipment(node) {
+  return context.item !== 'book' && Boolean(node.mask & 1);
+}
+
 function nodeTitle(node) {
   if (node.leaf === 0) return itemName(context.item);
   if (node.leaf > 0) {
     const b = result.books[node.leaf - 1];
     return enchantLabel(b.id, b.level);
   }
-  return `${node.mask & 1 ? itemName(context.item) : 'Book'} from step ${node.step}`;
+  return `${isEquipment(node) ? itemName(context.item) : 'Book'} from step ${node.step}`;
 }
 function nodeEnchants(node) {
   return result.books
-    .filter((_, i) => node.mask & (1 << (i + 1)))
+    .filter((_, i) => node.mask & (1 << (i + (context.item === 'book' ? 0 : 1))))
     .map((b) => enchantLabel(b.id, b.level));
 }
 function slot(node, label) {
   const output = label === 'RESULT';
-  const isGear = Boolean(node.mask & 1);
+  const isGear = isEquipment(node);
   const name = output ? (isGear ? itemName(context.item) : 'Combined book') : nodeTitle(node);
   let description = node.leaf === 0 ? 'Starting item' : 'Enchanted book';
   if (node.leaf === undefined) description = 'Use the result of this step';
@@ -104,13 +108,17 @@ function anvilSlots(step) {
 }
 
 function stepHeading(step) {
-  return step.mask & 1
+  return isEquipment(step)
     ? `Enchant your ${itemName(context.item).toLowerCase()}`
     : 'Combine two books';
 }
 function renderDetail() {
   const step = result.steps.find((s) => s.step === activeStep);
-  if (!step) return;
+  if (!step) {
+    $('#step-detail').hidden = true;
+    $('#compact-graph').innerHTML = readyBook();
+    return;
+  }
   const leftPenalty = penalty(step.left.uses);
   const rightPenalty = penalty(step.right.uses);
   const enchantmentCost = step.cost - leftPenalty - rightPenalty;
@@ -130,7 +138,7 @@ function renderDetail() {
 }
 
 function compactInput(node, label) {
-  const isGear = Boolean(node.mask & 1);
+  const isGear = isEquipment(node);
   const fromStep = node.leaf === undefined;
   const tag = fromStep ? 'button' : 'div';
   return `<${tag} class="compact-node ${isGear ? 'gear-node' : 'book-node'}"
@@ -161,9 +169,9 @@ function renderCompactGraph(step) {
       <path d="M144 40 L150 46 L156 40"/>
     </svg>
     <div class="compact-node compact-result">
-      ${gearIcon(step.mask & 1 ? context.item : 'enchanted_book')}
+      ${gearIcon(isEquipment(step) ? context.item : 'enchanted_book')}
       <div><small>RESULT · ${step.cost} LEVELS</small>
-        <strong>${step === result.root ? 'Finished ' : ''}${step.mask & 1 ? escape(itemName(context.item)) : 'Combined book'}</strong>
+        <strong>${step === result.root ? 'Finished ' : ''}${isEquipment(step) ? escape(itemName(context.item)) : 'Combined book'}</strong>
         <span>${nodeEnchants(step).map(escape).join(' · ')}</span>
       </div>
     </div>`;
@@ -195,7 +203,7 @@ function setGraphMode(mode) {
 
 function graphCard(node) {
   const combine = node.leaf === undefined;
-  const isGear = Boolean(node.mask & 1);
+  const isGear = isEquipment(node);
   const finished = node === result.root;
   const title = combine
     ? finished
@@ -256,7 +264,7 @@ function renderGraph() {
   const paths = edges
     .map(
       ([a, b]) =>
-        `<path class="flow-edge ${a.mask & 1 ? '' : 'book-edge'}" d="M${a.x + 224} ${a.y + 41} C${a.x + 250} ${a.y + 41},${b.x - 22} ${b.y + 41},${b.x} ${b.y + 41}"/><circle class="graph-junction" cx="${b.x}" cy="${b.y + 41}" r="2.5"/>`
+        `<path class="flow-edge ${isEquipment(a) ? '' : 'book-edge'}" d="M${a.x + 224} ${a.y + 41} C${a.x + 250} ${a.y + 41},${b.x - 22} ${b.y + 41},${b.x} ${b.y + 41}"/><circle class="graph-junction" cx="${b.x}" cy="${b.y + 41}" r="2.5"/>`
     )
     .join('');
   const cards = nodes.map(graphCard).join('');
@@ -264,7 +272,19 @@ function renderGraph() {
     `<svg id="flow-svg" data-natural-width="${width}" data-natural-height="${height}" viewBox="0 0 ${width} ${height}" role="group" aria-label="Optimal enchantment combining tree" xmlns="http://www.w3.org/2000/svg">${paths}${cards}</svg>`;
   applyZoom();
 }
+function readyBook() {
+  return (
+    '<div class="empty-state">' +
+    gearIcon('enchanted_book') +
+    '<h3>Your book is ready</h3><p>One enchanted book selected. No anvil steps needed.</p></div>'
+  );
+}
 function renderSteps() {
+  if (!result.steps.length) {
+    $('#steps-view').innerHTML = readyBook();
+    reveal($('#steps-view'));
+    return;
+  }
   $('#steps-view').innerHTML =
     `<div class="steps-intro"><p>Follow these in order. Keep the anvil slots as shown.</p><span id="step-progress">${completed.size} of ${result.steps.length} done</span></div>` +
     result.steps
@@ -292,7 +312,10 @@ function renderSteps() {
 function renderResult() {
   $('#safety-badge').hidden = false;
   $('#plan-details').hidden = false;
-  $('#result-title').textContent = `Enchant your ${itemName(context.item).toLowerCase()}`;
+  $('#result-title').textContent =
+    context.item === 'book'
+      ? 'Combine your books'
+      : `Enchant your ${itemName(context.item).toLowerCase()}`;
   $('#safety-badge').textContent = result.theoretical ? '⚠ Theoretical only' : '✓ Survival safe';
   $('#safety-badge').classList.toggle('warning', result.theoretical);
   $('#stat-total').innerHTML = `${result.total}<em>levels</em>`;
@@ -305,7 +328,7 @@ function renderResult() {
   $('#plan-footnote').textContent =
     `${result.xp.toLocaleString()} XP if you recharge from level 0 for each step. One separate book per enchantment, already at the selected level. ${context.objective === 'penalty' ? 'Optimized for lowest final work penalty, then total levels.' : context.objective === 'xp' ? 'Optimized for that XP strategy.' : 'Optimized for fewest total levels.'}`;
   $('#export').disabled = false;
-  $('#graph-mode').hidden = false;
+  $('#graph-mode').hidden = !result.steps.length;
   for (const id of ['zoom-in', 'zoom-out', 'zoom-fit']) $('#' + id).disabled = false;
   const windBurst = result.books.find((book) => book.id === 'wind_burst' && book.level > 1);
   $('#preparation-note').hidden = !windBurst;
@@ -316,28 +339,33 @@ function renderResult() {
   renderDetail();
   renderSteps();
   setView('steps');
+  reveal($('#steps-view'));
 }
 function applyZoom() {
   const svg = $('#flow-svg');
   if (svg) {
     const naturalWidth = Number(svg.dataset.naturalWidth);
     const available = Math.max(240, $('#graph').clientWidth - 28);
-    const width = (fitGraph ? Math.min(naturalWidth, available) : naturalWidth) * zoom;
+    const naturalHeight = Number(svg.dataset.naturalHeight);
+    const availableHeight = Math.max(160, ($('#graph').clientHeight || 430) - 28);
+    const fit = Math.min(1, available / naturalWidth, availableHeight / naturalHeight);
+    const width = naturalWidth * (fitGraph ? fit : 1) * zoom;
     svg.style.width = `${width}px`;
     svg.style.height = `${(width * Number(svg.dataset.naturalHeight)) / naturalWidth}px`;
     svg.style.maxWidth = 'none';
   }
 }
 export function setView(view) {
+  const changed = currentView !== view;
   currentView = view;
   for (const v of ['flow', 'steps']) {
     $('#' + v + '-view').hidden = v !== view;
     $('#' + v + '-tab').classList.toggle('active', v === view);
     $('#' + v + '-tab').setAttribute('aria-pressed', v === view);
   }
-  $('#step-detail').hidden = view !== 'flow' || !result;
+  $('#step-detail').hidden = view !== 'flow' || !result?.steps.length;
   if (view === 'flow') applyZoom();
-  reveal($('#' + view + '-view'));
+  if (changed) reveal($('#' + view + '-view'));
 }
 function exportPlan() {
   if (!result) return;
@@ -350,7 +378,9 @@ function exportPlan() {
     'Books must already be at the selected levels. Making higher-level books is not included in this total.',
     '',
     'INPUTS',
-    `Unenchanted ${itemName(context.item)}, prior-work count ${context.itemUses}`,
+    context.item === 'book'
+      ? 'Combine the enchanted books below.'
+      : `Unenchanted ${itemName(context.item)}, prior-work count ${context.itemUses}`,
     ...result.books.map((b) => `${enchantLabel(b.id, b.level)} book, prior-work count ${b.uses}`),
     '',
     'ORDER',

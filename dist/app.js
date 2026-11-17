@@ -60,6 +60,9 @@ function renderControls() {
     .join('');
   $('#item').value = state.item;
   $('#item-uses').value = state.itemUses;
+  $('#preset').hidden = state.item === 'book';
+  $('#item-uses').closest('label').hidden = state.item === 'book';
+  $('#item-uses').closest('label').nextElementSibling.hidden = state.item === 'book';
   $('#objective').value = state.objective;
   for (const [id, key] of [
     ['incompatible', 'incompatible'],
@@ -118,6 +121,10 @@ function applyPreset() {
     'piercing',
     'infinity',
   ]);
+  if (['axe', 'shovel'].includes(state.item)) {
+    skip.delete('silk_touch');
+    skip.add('fortune');
+  }
   for (const e of available())
     if (
       !skip.has(e.id) &&

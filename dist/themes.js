@@ -1,3 +1,5 @@
+import { reveal, finishReveals } from './motion.js';
+
 const STORAGE_KEY = 'anvil-studio-appearance';
 export const THEMES = ['forest', 'amethyst', 'ocean', 'ember', 'overworld'];
 const themeMobs = {
@@ -36,9 +38,7 @@ export function setupThemes() {
 
   function apply() {
     root.dataset.theme = appearance.theme;
-    root.dataset.motion = appearance.motion && !reducedMotion.matches ? 'on' : 'off';
-    motionControl.checked = appearance.motion;
-    document.querySelector('#reduced-motion-note').hidden = !reducedMotion.matches;
+    applyMotion();
     document.querySelector('meta[name="theme-color"]').content = backgrounds[appearance.theme];
     document.querySelectorAll('[data-theme-choice]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.themeChoice === appearance.theme);
@@ -48,13 +48,17 @@ export function setupThemes() {
       if (visible && !image.getAttribute('src')) image.src = image.dataset.mobSrc;
       image.classList.toggle('is-visible', visible);
     });
-    if (root.dataset.motion === 'off') {
-      document.getAnimations?.().forEach((animation) => {
-        animation.finished.catch(() => {});
-        animation.cancel();
-      });
-    }
   }
+  function applyMotion() {
+    const enabled = appearance.motion && !reducedMotion.matches;
+    if (!enabled) finishReveals();
+    root.dataset.motion = enabled ? 'on' : 'off';
+    motionControl.checked = appearance.motion;
+    document.querySelector('#reduced-motion-note').hidden = !reducedMotion.matches;
+  }
+  picker.addEventListener('toggle', () => {
+    if (picker.open) reveal(picker.querySelector('.theme-menu'));
+  });
 
   function save() {
     try {
@@ -75,10 +79,10 @@ export function setupThemes() {
   });
   motionControl.addEventListener('change', () => {
     appearance.motion = motionControl.checked;
-    apply();
+    applyMotion();
     save();
   });
-  reducedMotion.addEventListener('change', apply);
+  reducedMotion.addEventListener('change', applyMotion);
   document.addEventListener('click', (event) => {
     if (!picker.contains(event.target)) picker.open = false;
   });

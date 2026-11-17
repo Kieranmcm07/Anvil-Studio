@@ -179,7 +179,6 @@ footer {
   border-radius: 12px;
   box-shadow: 0 16px 40px #0007;
   transition: none;
-  animation: menu-in 180ms ease-out both;
   backface-visibility: hidden;
 }
 .theme-menu > p {
@@ -368,7 +367,7 @@ button.compact-node:active,
 .book-origin,
 .result-enchantments[open] > p,
 .plan-details[open] > p {
-  animation: step-in 260ms ease-out backwards;
+  animation: none;
 }
 .primary-button:hover:not(:disabled),
 .level-buttons button:hover:not(:disabled) {
@@ -379,8 +378,7 @@ button.compact-node:active,
   transform: translateY(0) scale(0.98);
 }
 .check-step {
-  animation: step-in 350ms ease-out backwards;
-  animation-delay: calc(var(--step-index, 0) * 40ms);
+  animation: none;
 }
 .done-control input {
   transition: transform 180ms ease;
@@ -389,7 +387,7 @@ button.compact-node:active,
   transform: scale(1.1);
 }
 .graph .node {
-  animation: node-in 300ms ease-out both;
+  animation: none;
 }
 .graph .node:focus-visible {
   outline: none;
@@ -503,15 +501,19 @@ button.compact-node:active,
   }
 }
 @keyframes mob-drift {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(0, -10px, 0); }
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -10px, 0);
+  }
 }
 
 /* The setting and the operating-system preference both stop motion. */
 [data-motion='off'] *,
 [data-motion='off'] *::before,
 [data-motion='off'] *::after {
-  animation: none !important;
+  animation-play-state: paused !important;
   transition: none !important;
   scroll-behavior: auto !important;
 }
@@ -519,7 +521,7 @@ button.compact-node:active,
   *,
   *::before,
   *::after {
-    animation: none !important;
+    animation-play-state: paused !important;
     transition: none !important;
     scroll-behavior: auto !important;
   }
@@ -530,7 +532,71 @@ button.compact-node:active,
     display: none !important;
   }
   * {
-    animation: none !important;
+    animation-play-state: paused !important;
     transition: none !important;
+  }
+}
+
+/* Hidden theme controls should reopen in their current colours, without a stale transition. */
+.theme-menu,
+#theme-picker .theme-menu * {
+  transition: none;
+}
+.graph .node:focus {
+  outline: none;
+}
+.graph .node:focus-visible .node-bg {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+button:focus:not(:focus-visible),
+summary:focus:not(:focus-visible) {
+  outline: none;
+}
+
+input[type='checkbox'] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  outline: none;
+  cursor: pointer;
+}
+input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type='checkbox']::before {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid var(--accent-ink);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+  opacity: 0;
+}
+input[type='checkbox']:checked::before {
+  opacity: 1;
+}
+input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (min-width: 1101px) {
+  .mob-creeper,
+  .mob-zombie,
+  .mob-skeleton,
+  .mob-fox {
+    left: max(8px, calc((100vw - 1380px) / 2 - 214px));
+  }
+  .mob-enderman,
+  .mob-blaze,
+  .mob-shulker,
+  .mob-dolphin,
+  .mob-bee,
+  .mob-axolotl {
+    right: max(8px, calc((100vw - 1380px) / 2 - 214px));
   }
 }

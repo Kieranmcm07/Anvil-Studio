@@ -22,6 +22,7 @@ export const ITEMS = [
   ['chestplate', 'Chestplate', 'armor'],
   ['leggings', 'Leggings', 'armor'],
   ['boots', 'Boots', 'armor'],
+  ['turtle_helmet', 'Turtle Shell', 'armor'],
   ['sword', 'Sword', 'weapons'],
   ['axe', 'Axe', 'tools'],
   ['pickaxe', 'Pickaxe', 'tools'],
@@ -34,6 +35,8 @@ export const ITEMS = [
   ['spear', 'Spear', 'weapons'],
   ['elytra', 'Elytra', 'utility'],
   ['shield', 'Shield', 'utility'],
+  ['brush', 'Brush', 'tools'],
+  ['book', 'Book', 'utility'],
   ['fishing_rod', 'Fishing rod', 'utility'],
   ['shears', 'Shears', 'utility'],
   ['flint_and_steel', 'Flint and steel', 'utility'],
@@ -95,7 +98,15 @@ const introduced = {
   lunge: 26,
 };
 export function itemsFor(profile) {
-  const since = { spear: 26, mace: 21, trident: 13, crossbow: 14, warped_fungus_on_a_stick: 16 };
+  const since = {
+    spear: 26,
+    mace: 21,
+    trident: 13,
+    turtle_helmet: 13,
+    brush: 20,
+    crossbow: 14,
+    warped_fungus_on_a_stick: 16,
+  };
   return ITEMS.filter(([id]) => (since[id] || 0) <= profile.era);
 }
 export function enchantsFor(raw, profile, item) {
@@ -119,7 +130,7 @@ export function enchantsFor(raw, profile, item) {
         ['sharpness', 'smite', 'bane_of_arthropods'].includes(id)
       )
         return false;
-      return e.items.includes(item) || e.items.includes('diamond_' + item);
+      return item === 'book' || e.items.includes(item) || e.items.includes('diamond_' + item);
     })
     .map(([id, e]) => ({
       id,

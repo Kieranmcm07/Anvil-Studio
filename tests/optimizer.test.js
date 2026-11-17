@@ -244,3 +244,34 @@ test('every equipment and book icon is a local, source-verified Minecraft PNG', 
       assert(bytes.readUInt32BE(16) > 16, 'Shield uses the full inventory render');
   }
 });
+
+test('turtle shells and brushes follow version and enchantment availability', () => {
+  for (const id of ['java-26.3', 'bedrock-26.3']) {
+    const p = profile(id);
+    assert(enchantsFor(raw, p, 'turtle_helmet').some((e) => e.id === 'respiration'));
+    assert.deepEqual(
+      enchantsFor(raw, p, 'brush')
+        .map((e) => e.id)
+        .sort(),
+      ['mending', 'unbreaking', 'vanishing_curse']
+    );
+  }
+  assert(!itemsFor(profile('java-1.9')).some(([id]) => id === 'turtle_helmet'));
+  assert(!itemsFor(profile('java-1.14')).some(([id]) => id === 'brush'));
+});
+test('book plans consume only the supplied enchanted books', () => {
+  const single = optimize({ item: 'book', books: [book('mending', 1, 2)] });
+  assert.equal(single.total, 0);
+  assert.equal(single.steps.length, 0);
+  const pair = optimize({ item: 'book', books: [book('mending', 1, 2), book('unbreaking', 3, 1)] });
+  assert.equal(pair.total, 2);
+  assert.equal(pair.steps.length, 1);
+  const three = optimize({
+    item: 'book',
+    books: [book('mending', 1, 2), book('thorns', 3, 4), book('unbreaking', 3, 1)],
+  });
+  assert.equal(three.total, 6);
+  assert.equal(three.steps.length, 2);
+  assert.equal(three.root.mask, 7);
+  assert.throws(() => optimize({ item: 'book', books: [] }));
+});

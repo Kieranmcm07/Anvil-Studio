@@ -45,6 +45,7 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Lets you switch to a graph, tick off completed steps and export your plan.
 - Handles conflicting enchantments and selected historical compatibility rules.
 - Offers recommended selections, search and settings for previous anvil work.
+- Supports turtle shells, brushes and combining enchanted books into one book.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
 - Uses Minecraft item artwork, with animated mob backgrounds for each theme.
 - Adapts to phones and tablets, with a readable graph for each step and an optional full tree.

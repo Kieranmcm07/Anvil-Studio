@@ -11,7 +11,7 @@ NAMES = '''diamond_helmet diamond_chestplate diamond_leggings diamond_boots diam
 diamond_axe diamond_pickaxe diamond_shovel diamond_hoe bow crossbow_standby trident mace
 diamond_spear elytra shield fishing_rod shears flint_and_steel carrot_on_a_stick
 warped_fungus_on_a_stick enchanted_book anvil grass_block experience_bottle paper
-emerald amethyst_shard prismarine_crystals blaze_powder book compass_16 redstone'''.split()
+emerald amethyst_shard prismarine_crystals blaze_powder book compass_16 redstone turtle_helmet brush bedrock'''.split()
 SHIELD = ('https://raw.githubusercontent.com/TinyTank800/MinecraftAllImages/'
           '8888a461f088c6b907f13c14f25a12d90a481ae3/public/images-v2/26.2/shield.png')
 RENDERS = ('https://raw.githubusercontent.com/Owen1212055/mc-assets/'
@@ -20,7 +20,7 @@ RENDERS = ('https://raw.githubusercontent.com/Owen1212055/mc-assets/'
 def download(name):
     # The shield is a 3D item. Use its inventory render, not the empty-slot outline.
     url = SHIELD if name == 'shield' else BASE + name + '.png'
-    if name in ['anvil', 'grass_block']:
+    if name in ['anvil', 'grass_block', 'bedrock']:
         url = RENDERS + name.upper() + '.png'
     try:
         with urlopen(url, timeout=30) as response:
