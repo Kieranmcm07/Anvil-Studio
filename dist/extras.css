@@ -1,0 +1,152 @@
+/* Small extras use the current theme and motion setting. */
+.plan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.plan-actions button {
+  min-height: 44px;
+}
+.blueprint-toolbar {
+  flex-wrap: wrap;
+}
+.share-dialog {
+  width: min(480px, calc(100vw - 32px));
+  padding: 24px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+}
+.share-dialog::backdrop {
+  background: #0009;
+}
+.share-dialog h2 {
+  margin: 0 0 12px;
+}
+.share-dialog p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.share-dialog textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  padding: 10px;
+  margin-top: 8px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+.completion-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  margin-top: 18px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+.completion-card h3 {
+  margin: 0 0 5px;
+}
+.completion-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.finished-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  height: 56px;
+}
+.finished-icon .gear-icon {
+  width: 48px;
+  height: 48px;
+}
+.finished-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.celebrate .finished-icon img {
+  animation: finish-glint 1.6s ease-out;
+}
+.finish-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.finish-particles i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  opacity: 0;
+  background: var(--accent);
+}
+.finish-particles i:nth-child(even) {
+  background: var(--purple);
+}
+.celebrate .finish-particles i {
+  animation: finish-spark 1.2s ease-out both;
+}
+@keyframes finish-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) rotate(var(--turn));
+  }
+}
+@keyframes finish-glint {
+  0%,
+  100% {
+    filter: none;
+    transform: scale(1);
+  }
+  35% {
+    filter: drop-shadow(0 0 7px var(--purple)) brightness(1.7);
+    transform: scale(1.13);
+  }
+  65% {
+    filter: drop-shadow(0 0 5px var(--accent));
+    transform: scale(1);
+  }
+}
+@media (max-width: 580px) {
+  .blueprint-toolbar .plan-actions {
+    width: 100%;
+  }
+  .completion-card {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+[data-motion='off'] .finish-particles {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .finish-particles {
+    display: none;
+  }
+}
+@media print {
+  .share-dialog,
+  #share {
+    display: none;
+  }
+}

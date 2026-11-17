@@ -3,9 +3,11 @@ import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
 import { reveal } from './motion.js';
 import { setStat, clearStat, updateCount } from './stats.js';
+import { playSound } from './sounds.js';
 
 let result = null;
 let needsUpdate = false;
+let celebrated = false;
 let context = null;
 let zoom = 1;
 let fitGraph = true;
@@ -21,6 +23,7 @@ export function showPlan(plan, settings) {
   fitGraph = true;
   activeStep = 1;
   completed.clear();
+  celebrated = false;
   setGraphMode('step');
   renderResult();
 }
@@ -30,6 +33,7 @@ export function clearPlan({ fresh = false } = {}) {
   result = null;
   context = null;
   completed.clear();
+  celebrated = false;
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
     clearStat($('#' + id), { immediate: fresh });
   }
@@ -309,7 +313,20 @@ function renderSteps() {
       </div>
     </article>`
       )
-      .join('');
+      .join('') +
+    completionCard();
+}
+function completionCard() {
+  const name = context.item === 'book' ? 'book' : itemName(context.item).toLowerCase();
+  const particles = Array.from(
+    { length: 12 },
+    (_, i) =>
+      `<i style="--x: ${Math.round(Math.cos((i * Math.PI) / 6) * 95)}px; --y: ${Math.round(Math.sin((i * Math.PI) / 6) * 60)}px; --turn: ${i * 45}deg"></i>`
+  ).join('');
+  return `<div id="completion" class="completion-card" role="status" hidden>
+    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="finish-particles">${particles}</span></div>
+    <div><h3>Your ${escape(name)} is ready!</h3><p>Every anvil step is done. Enjoy your gear.</p></div>
+  </div>`;
 }
 function renderResult() {
   $('#plan-details').hidden = false;
@@ -439,6 +456,16 @@ $('#steps-view').addEventListener('change', (e) => {
   else completed.delete(step);
   e.target.closest('.check-step').classList.toggle('done', e.target.checked);
   updateCount($('#step-progress'), `${completed.size} of ${result.steps.length} done`);
+  const allDone = completed.size === result.steps.length;
+  const card = $('#completion');
+  card.hidden = !allDone;
+  if (!allDone) card.classList.remove('celebrate');
+  if (allDone && !celebrated) {
+    celebrated = true;
+    card.classList.add('celebrate');
+    reveal(card);
+    playSound('levelup');
+  } else if (e.target.checked) playSound('anvil');
 });
 $('#zoom-in').addEventListener('click', () => {
   zoom = Math.min(3, zoom + 0.25);

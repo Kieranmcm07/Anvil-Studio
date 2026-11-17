@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="./themes.css" />
     <link rel="stylesheet" href="./responsive.css" />
     <link rel="stylesheet" href="./scenery.css" />
+    <link rel="stylesheet" href="./extras.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
@@ -402,6 +403,9 @@
             <label class="motion-toggle"
               ><input id="theme-motion" type="checkbox" checked />Animations</label
             >
+            <label class="motion-toggle"
+              ><input id="sound-enabled" type="checkbox" />Minecraft sounds</label
+            >
             <small id="reduced-motion-note" hidden>Your device has reduced motion turned on.</small>
           </div>
         </details>
@@ -590,15 +594,26 @@
                   /><span>View graph</span>
                 </button>
               </div>
-              <button id="export" class="text-button item-label" disabled>
-                <img
-                  class="ui-item"
-                  src="./assets/items/paper.png"
-                  alt=""
-                  width="20"
-                  height="20"
-                />Export plan
-              </button>
+              <div class="plan-actions">
+                <button id="share" class="text-button item-label" disabled>
+                  <img
+                    class="ui-item"
+                    src="./assets/items/compass_16.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                  />Share link
+                </button>
+                <button id="export" class="text-button item-label" disabled>
+                  <img
+                    class="ui-item"
+                    src="./assets/items/paper.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                  />Export plan
+                </button>
+              </div>
             </div>
             <div id="flow-view" hidden>
               <div class="graph-caption">
@@ -875,6 +890,17 @@
         needed after loading. Your theme is saved in this browser. The planner starts fresh on each
         visit. Not affiliated with Mojang or Microsoft.
       </p>
+    </dialog>
+    <dialog id="share-dialog" class="share-dialog" aria-labelledby="share-title">
+      <h2 id="share-title">Share this setup</h2>
+      <p>Edition, version, gear and book levels are included.</p>
+      <label for="share-url">Link</label>
+      <textarea id="share-url" readonly rows="4" spellcheck="false"></textarea>
+      <p id="share-feedback" role="status"></p>
+      <div class="plan-actions">
+        <button id="copy-share" class="text-button">Copy link</button
+        ><button id="close-share" class="text-button">Close</button>
+      </div>
     </dialog>
     <noscript>This calculator needs JavaScript enabled in your browser.</noscript>
   </body>

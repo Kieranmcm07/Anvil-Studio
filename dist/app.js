@@ -4,6 +4,8 @@ import { clearPlan, showPlan } from './plan-view.js';
 import { renderPicker } from './enchantment-picker.js';
 import { setupGithubLinks } from './config.js';
 import { setupThemes } from './themes.js';
+import { setupSounds } from './sounds.js';
+import { readSharedPlan, setupSharing } from './share.js';
 import { reveal, setupMotion, motionEnabled } from './motion.js';
 
 const defaults = () => ({
@@ -90,6 +92,7 @@ function renderControls() {
 }
 function renderEnchantments() {
   renderPicker(available(), state, profile(), raw);
+  $('#share').disabled = !Object.keys(state.selected).length;
 }
 function notice(message) {
   $('#notice').textContent = message;
@@ -326,6 +329,12 @@ document.addEventListener('keydown', (e) => {
 setupGithubLinks();
 setupThemes();
 setupMotion();
+setupSounds();
+setupSharing(
+  () => state,
+  () => raw,
+  notice
+);
 clearPlan({ fresh: true });
 // Older versions saved a loadout. Each visit now starts with a fresh planner.
 try {
@@ -336,8 +345,23 @@ try {
   const response = await fetch(new URL('./vanilla-data.json', import.meta.url));
   if (!response.ok) throw new Error('Data could not load');
   raw = (await response.json()).enchantments;
+  loadSharedSetup();
   renderControls();
 } catch {
   notice('The game data could not load. Refresh the page and try again.');
   $('#calculate').disabled = true;
 }
+
+function loadSharedSetup() {
+  try {
+    const shared = readSharedPlan(window.location.hash, raw);
+    if (!shared) return;
+    state = shared;
+    $('#search').value = '';
+    invalidate('Shared setup loaded. Click “Show my steps” when you’re ready.');
+    renderControls();
+  } catch (error) {
+    notice(error.message);
+  }
+}
+window.addEventListener('hashchange', loadSharedSetup);

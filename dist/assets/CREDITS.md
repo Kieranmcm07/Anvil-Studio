@@ -41,3 +41,12 @@ calculator's version rules.
 
 Exact source URLs and hashes are in [`mobs/sources.json`](mobs/sources.json).
 Use `python scripts/fetch-mob-images.py` to download the same images again.
+
+## Minecraft sounds
+
+The click, anvil-use and level-up recordings are original, unmodified Minecraft
+Java sounds downloaded from Mojang's official asset servers using the
+[1.21.1 asset index](https://piston-meta.mojang.com/v1/packages/b4c5b00becac17e3f7e88d8f55c8c01107cc9de9/17.json).
+Exact URLs and verified SHA-1 hashes are in [sounds/sources.json](sounds/sources.json).
+These game assets belong to their respective rights holders and are not covered
+by this project's MIT code license. Sound is optional and disabled initially.

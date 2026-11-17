@@ -1,0 +1,17 @@
+{
+  "click": {
+    "url": "https://resources.download.minecraft.net/ec/ec4f4d122ab7c5d44e48419de0e3de1b0922514d",
+    "sha1": "ec4f4d122ab7c5d44e48419de0e3de1b0922514d",
+    "original": "minecraft/sounds/random/click.ogg"
+  },
+  "anvil": {
+    "url": "https://resources.download.minecraft.net/88/88a792430dfff97582ab49b8dc9477cd9d4e5ebb",
+    "sha1": "88a792430dfff97582ab49b8dc9477cd9d4e5ebb",
+    "original": "minecraft/sounds/random/anvil_use.ogg"
+  },
+  "levelup": {
+    "url": "https://resources.download.minecraft.net/b9/b9c60e807ba770e8c4a2b1bae81d51813dc64b6c",
+    "sha1": "b9c60e807ba770e8c4a2b1bae81d51813dc64b6c",
+    "original": "minecraft/sounds/random/levelup.ogg"
+  }
+}

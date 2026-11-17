@@ -57,6 +57,20 @@ function check(value, message) {
   checks++;
 }
 
+const playedSounds = [];
+let pausedSounds = 0;
+window.Audio = class {
+  constructor(src) {
+    this.src = src;
+  }
+  play() {
+    playedSounds.push(this.src);
+    return Promise.resolve();
+  }
+  pause() {
+    pausedSounds++;
+  }
+};
 await import('../dist/app.js');
 await tick();
 check($('#selection-count').textContent === '0', 'First visit starts with no enchantments');
@@ -74,6 +88,90 @@ click('#calculate');
 await tick();
 check(workerStarts === 1, 'Show my steps starts the optimizer');
 check(hasPlan(), 'Requested helmet plan');
+check(
+  !$('#sound-enabled').checked && playedSounds.length === 0,
+  'Sounds start off with no playback'
+);
+const { createShareUrl, readSharedPlan } = await import('../dist/share.js');
+const sharedRaw = JSON.parse(
+  await readFile(new URL('../dist/vanilla-data.json', import.meta.url), 'utf8')
+).enchantments;
+const sharedState = {
+  version: 'bedrock-26.3',
+  item: 'shield',
+  itemUses: 2,
+  objective: 'xp',
+  selected: { mending: { level: 1, uses: 1 }, unbreaking: { level: 3, uses: 0 } },
+  incompatible: false,
+  moreTen: false,
+  bookHistory: true,
+  showCurses: false,
+};
+const sharedUrl = createShareUrl(sharedState, 'https://anvil-studio.pages.dev/');
+const restored = readSharedPlan(new URL(sharedUrl).hash, sharedRaw);
+check(
+  restored.edition === 'bedrock' &&
+    restored.itemUses === 2 &&
+    restored.objective === 'xp' &&
+    restored.selected.mending.uses === 1 &&
+    restored.selected.unbreaking.level === 3,
+  'Share links preserve edition, item, levels, objective and prior work'
+);
+for (const bad of [
+  '#plan=%broken',
+  '#plan=' + encodeURIComponent('null'),
+  '#plan=' + encodeURIComponent(JSON.stringify([1, 'unknown', 'shield', 0, 'levels', 0, []])),
+  '#plan=' +
+    encodeURIComponent(
+      JSON.stringify([1, 'java-26.3', 'helmet', 0, 'levels', 0, [['protection', 99, 0]]])
+    ),
+  '#plan=' +
+    encodeURIComponent(
+      JSON.stringify([
+        1,
+        'java-26.3',
+        'helmet',
+        0,
+        'levels',
+        0,
+        [
+          ['protection', 4, 0],
+          ['fire_protection', 4, 0],
+        ],
+      ])
+    ),
+  '#plan=' +
+    encodeURIComponent(
+      JSON.stringify([1, 'java-26.3', 'mace', 0, 'levels', 0, [['wind_burst', 3, 0]]])
+    ),
+]) {
+  assert.throws(() => readSharedPlan(bad, sharedRaw));
+  checks++;
+}
+let copiedLink = '';
+const clipboard = window.navigator.clipboard;
+const originalWrite = clipboard.writeText;
+clipboard.writeText = async (text) => {
+  copiedLink = text;
+};
+click('#share');
+await tick();
+check(
+  readSharedPlan(new URL(copiedLink).hash, sharedRaw).item === 'helmet',
+  'Share button copies the current setup'
+);
+clipboard.writeText = async () => {
+  throw new Error('Permission denied');
+};
+click('#share');
+await tick();
+check(
+  $('#share-dialog').open && $('#share-url').value.includes('#plan='),
+  'Blocked clipboard offers a selectable link'
+);
+click('#close-share');
+clipboard.writeText = originalWrite;
+
 const totalBeforeTheme = $('#stat-total').dataset.value;
 let popupReveals = 0;
 const themeMenu = $('.theme-menu');
@@ -313,6 +411,38 @@ $('#flow-svg [data-step="3"]').dispatchEvent(
 check($('[data-graph-select]').value === '3', 'Keyboard activation selects a tree step');
 click('#steps-tab');
 check($('.check-step.done'), 'Switching views preserves completed steps');
+check($('#completion').hidden, 'Celebration stays hidden until all steps are completed');
+click('#sound-enabled');
+check(
+  playedSounds.some((src) => src.endsWith('/click.ogg')),
+  'Enabling sound previews the original click'
+);
+for (let step = 2; step <= 6; step++) click('[data-complete="' + step + '"]');
+check(
+  !$('#completion').hidden && $('#completion').classList.contains('celebrate'),
+  'Finishing every step celebrates the completed item'
+);
+check(
+  playedSounds.some((src) => src.endsWith('/anvil.ogg')) &&
+    playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
+  'Steps play the anvil sound and completion plays one level-up sound'
+);
+click('[data-complete="6"]');
+check($('#completion').hidden, 'Unchecking a step hides the completion message');
+click('[data-complete="6"]');
+check(
+  !$('#completion').classList.contains('celebrate') &&
+    playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
+  'Reticking a step does not replay the celebration'
+);
+click('#sound-enabled');
+const soundsBefore = playedSounds.length;
+click('#steps-tab');
+check(
+  playedSounds.length === soundsBefore && pausedSounds > 0,
+  'Muting stops playback and future sounds'
+);
+
 click('#flow-tab');
 click('[data-edition="bedrock"]');
 change('#item', 'sword');
@@ -631,6 +761,19 @@ check(hasPlan(), 'The edited selection can calculate a fresh plan');
 
 window.requestAnimationFrame = requestFrame;
 window.cancelAnimationFrame = cancelFrame;
+
+const startsBeforeShare = workerStarts;
+window.location.hash = new URL(sharedUrl).hash;
+await tick();
+window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+check(
+  $('#version').value === 'bedrock-26.3' &&
+    $('#item').value === 'shield' &&
+    $('#selection-count').textContent === '2',
+  'Opening a shared link restores the controls'
+);
+check(workerStarts === startsBeforeShare && !hasPlan(), 'Shared links wait for Show my steps');
+window.history.replaceState(null, '', '/');
 
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
