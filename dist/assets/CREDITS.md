@@ -50,3 +50,11 @@ Java sounds downloaded from Mojang's official asset servers using the
 Exact URLs and verified SHA-1 hashes are in [sounds/sources.json](sounds/sources.json).
 These game assets belong to their respective rights holders and are not covered
 by this project's MIT code license. Sound is optional and disabled initially.
+
+## Enchanting particles and progress bar
+
+The six enchanting-table glyphs and XP-bar textures are unmodified Minecraft
+Java 26.3 assets from [mcmeta](https://github.com/misode/mcmeta/tree/26.3-assets/assets/minecraft/textures).
+They are served locally. Exact source URLs and SHA-256 hashes are in
+[effects/sources.json](effects/sources.json). The bar tracks completed anvil steps,
+not experience earned. These Minecraft textures remain owned by Mojang/Microsoft.

@@ -1,7 +1,7 @@
 import { itemName, itemIcon } from './data.js';
 import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
-import { reveal } from './motion.js';
+import { reveal, motionEnabled, enchantParticles } from './motion.js';
 import { setStat, clearStat, updateCount } from './stats.js';
 import { playSound } from './sounds.js';
 
@@ -90,7 +90,7 @@ function slot(node, label) {
     <div class="slot ${output ? 'output-slot' : ''}">
       <small>${label}</small>
       <div class="slot-content">
-        ${gearIcon(isGear ? context.item : 'enchanted_book')}
+        ${output ? '<span class="result-item">' + gearIcon(isGear ? context.item : 'enchanted_book') + '</span>' : gearIcon(isGear ? context.item : 'enchanted_book')}
         <div>
           <strong>${escape(name)}</strong>
           <span class="slot-subtitle">${description}</span>
@@ -290,6 +290,11 @@ function renderSteps() {
   }
   $('#steps-view').innerHTML =
     `<div class="steps-intro"><p>Follow these in order. Keep the anvil slots as shown.</p><span id="step-progress">${completed.size} of ${result.steps.length} done</span></div>` +
+    `<div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Enchanting steps completed"
+      aria-describedby="step-progress" aria-valuemin="0" aria-valuemax="${result.steps.length}"
+      aria-valuenow="${completed.size}" style="--remaining: ${100 - (completed.size / result.steps.length) * 100}%">
+      <span class="xp-progress-fill" aria-hidden="true"></span>
+    </div>` +
     result.steps
       .map(
         (s) => `
@@ -460,7 +465,15 @@ $('#steps-view').addEventListener('click', (e) => {
   button.setAttribute('aria-pressed', String(done));
   button.setAttribute('aria-label', done ? 'Undo step ' + step : 'Mark step ' + step + ' done');
   button.textContent = done ? '✓ Done · Undo' : 'Mark step done';
-  button.closest('.check-step').classList.toggle('done', done);
+  const stepCard = button.closest('.check-step');
+  stepCard.classList.toggle('done', done);
+  enchantParticles(stepCard.querySelector('.output-slot .result-item'), done);
+  const progress = $('#xp-progress');
+  progress.setAttribute('aria-valuenow', String(completed.size));
+  progress.style.setProperty(
+    '--remaining',
+    `${100 - (completed.size / result.steps.length) * 100}%`
+  );
   updateCount($('#step-progress'), `${completed.size} of ${result.steps.length} done`);
   const allDone = completed.size === result.steps.length;
   const card = $('#completion');
@@ -470,6 +483,7 @@ $('#steps-view').addEventListener('click', (e) => {
     card.classList.add('celebrate');
     reveal(card);
     playSound('levelup');
+    card.scrollIntoView({ behavior: motionEnabled() ? 'smooth' : 'auto', block: 'center' });
   } else playSound(done ? 'step' : 'click');
 });
 $('#zoom-in').addEventListener('click', () => {

@@ -42,6 +42,7 @@
   border-radius: 6px;
 }
 .completion-card {
+  scroll-margin-block: 24px;
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -217,6 +218,62 @@
 }
 @media print {
   .step-complete {
+    display: none;
+  }
+}
+
+/* The vanilla XP texture fills with completed steps, including undo. */
+.xp-progress {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  margin: 0 0 22px;
+  background: url('./assets/effects/experience_bar_background.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+.xp-progress-fill {
+  position: absolute;
+  inset: 0;
+  background: url('./assets/effects/experience_bar_progress.png') center / 100% 100% no-repeat;
+  clip-path: inset(0 var(--remaining, 100%) 0 0);
+  transition: clip-path 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.output-slot .result-item {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.enchant-particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+}
+.enchant-glyph {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: -6px;
+  top: -6px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+}
+[data-motion='off'] .enchant-particles {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .enchant-particles {
+    display: none;
+  }
+  .xp-progress-fill {
+    transition: none;
+  }
+}
+@media print {
+  .enchant-particles,
+  .xp-progress {
     display: none;
   }
 }

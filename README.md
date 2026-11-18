@@ -48,6 +48,7 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Supports turtle shells, brushes and combining enchanted books into one book.
 - Shares setups through links, including version, gear, enchantments and prior work.
 - Offers optional original Minecraft sounds and a celebration when every step is done.
+- Tracks finished steps with an XP-style bar and enchanting-table particles.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
 - Uses Minecraft item artwork, with separate mob scenes, fireflies, crystals, bubbles and embers.
 - Animates the heading and plan totals, with a switch to turn motion off.

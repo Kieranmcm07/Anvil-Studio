@@ -5,6 +5,7 @@ import { renderPicker } from './enchantment-picker.js';
 import { setupGithubLinks } from './config.js';
 import { setupThemes } from './themes.js';
 import { setupSounds, playSound } from './sounds.js';
+import { setupDropdowns } from './dropdowns.js';
 import { readSharedPlan, setupSharing } from './share.js';
 import { reveal, setupMotion, motionEnabled } from './motion.js';
 
@@ -360,6 +361,7 @@ setupGithubLinks();
 setupThemes();
 setupMotion();
 setupSounds();
+setupDropdowns(() => playSound('click'));
 setupSharing(
   () => state,
   () => raw,

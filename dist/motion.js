@@ -76,3 +76,45 @@ export function setupMotion() {
     true
   );
 }
+
+const enchantBursts = new WeakMap();
+export function enchantParticles(item, completed = true) {
+  if (!item) return;
+  enchantBursts.get(item)?.();
+  if (!completed || !motionEnabled() || !item.animate) return;
+  const layer = document.createElement('span');
+  layer.className = 'enchant-particles';
+  layer.setAttribute('aria-hidden', 'true');
+  item.append(layer);
+  const animations = [];
+  const cancel = () => {
+    for (const animation of animations) animation.cancel();
+    layer.remove();
+    enchantBursts.delete(item);
+  };
+  enchantBursts.set(item, cancel);
+  for (let i = 0; i < 6; i++) {
+    const glyph = document.createElement('span');
+    glyph.className = 'enchant-glyph';
+    glyph.style.backgroundImage = `url('./assets/effects/sga_${'abcdef'[i]}.png')`;
+    layer.append(glyph);
+    const angle = (i / 6) * Math.PI * 2;
+    const x = Math.round(Math.cos(angle) * 42);
+    const y = Math.round(Math.sin(angle) * 30);
+    const animation = glyph.animate(
+      [
+        { opacity: 0, transform: `translate(${x}px, ${y}px) scale(1)` },
+        { opacity: 0.85, offset: 0.2 },
+        { opacity: 0, transform: 'translate(0, 0) scale(.5)' },
+      ],
+      { duration: 1100, delay: i * 65, easing: 'ease-in', fill: 'both' }
+    );
+    animations.push(animation);
+    running.add(animation);
+    animation.finished.catch(() => {}).finally(() => running.delete(animation));
+  }
+  Promise.all(animations.map((animation) => animation.finished.catch(() => {}))).then(() => {
+    layer.remove();
+    if (enchantBursts.get(item) === cancel) enchantBursts.delete(item);
+  });
+}

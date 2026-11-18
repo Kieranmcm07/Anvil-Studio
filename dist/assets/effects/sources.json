@@ -1,0 +1,34 @@
+{
+  "sga_a": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_a.png",
+    "sha256": "f2c96c8a425d80e04df13c4dd6eab4daf951558dad3d3eac36f05dc2dee3d04a"
+  },
+  "sga_b": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_b.png",
+    "sha256": "a65b6c7858fb47ce55ebaa136c8256e55d8d72392ee846ec6f2a00a2a45a2592"
+  },
+  "sga_c": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_c.png",
+    "sha256": "f30470aefdbb27a51f9039574c60dc5cab927906cc948e5099ab1a403237b4aa"
+  },
+  "sga_d": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_d.png",
+    "sha256": "4a105e2a1242cce3cbb12f8ca9aaa8fb48528e6606cb252383a57a2eb310f13c"
+  },
+  "sga_e": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_e.png",
+    "sha256": "2a04a1b6a17e8e9720ffc9dc08a746028163eb7b7ff13a2d313df75776f9612d"
+  },
+  "sga_f": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/particle/sga_f.png",
+    "sha256": "a0aea2f182ac0e93450b8f5b133fc16895e7cecbf3e128a8f42633143a044c0e"
+  },
+  "experience_bar_background": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/gui/sprites/hud/experience_bar_background.png",
+    "sha256": "0ea991d9e971547d901f7adcfd6af8f6692c39e4e4ed620b2844c2ebeccb9d71"
+  },
+  "experience_bar_progress": {
+    "source": "https://raw.githubusercontent.com/misode/mcmeta/26.3-assets/assets/minecraft/textures/gui/sprites/hud/experience_bar_progress.png",
+    "sha256": "a94235503f186fd84ac66ce4b09a4ba9796bc4b8efb9ad43dcc3486698fc26dd"
+  }
+}

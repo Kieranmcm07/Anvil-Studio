@@ -82,6 +82,16 @@ window.Audio = class {
     pausedSounds++;
   }
 };
+let glyphAnimations = 0;
+const animateElement = window.HTMLElement.prototype.animate;
+window.HTMLElement.prototype.animate = function (...args) {
+  if (this.classList.contains('enchant-glyph')) glyphAnimations++;
+  return animateElement.apply(this, args);
+};
+const completionScrolls = [];
+window.HTMLElement.prototype.scrollIntoView = function (options) {
+  if (this.id === 'completion') completionScrolls.push(options);
+};
 await import('../dist/app.js');
 await tick();
 check($('#selection-count').textContent === '0', 'First visit starts with no enchantments');
@@ -337,6 +347,12 @@ check(document.querySelectorAll('#flow-svg .node').length === 6, 'Six clickable 
 check($('#step-detail').textContent.includes('LEFT SLOT'), 'Anvil slot inspector');
 click('#steps-tab');
 check(!$('#steps-view').hidden, 'Step checklist opens');
+check(
+  $('#xp-progress').getAttribute('aria-valuenow') === '0' &&
+    $('#xp-progress').getAttribute('aria-valuemax') === '6',
+  'XP-style progress starts empty and measures steps, not XP cost'
+);
+const glyphsBeforeStep = glyphAnimations;
 const progressCounter = $('#step-progress');
 const progressAnimate = progressCounter.animate.bind(progressCounter);
 let progressAnimations = 0;
@@ -349,6 +365,13 @@ check(progressAnimations === 1, 'Completing a step animates the changed progress
 progressCounter.animate = progressAnimate;
 check($('.check-step.done'), 'Step completion');
 check($('#step-progress').textContent === '1 of 6 done', 'Checklist progress updates');
+check(
+  $('#xp-progress').getAttribute('aria-valuenow') === '1' &&
+    parseFloat($('#xp-progress').style.getPropertyValue('--remaining')) > 83 &&
+    parseFloat($('#xp-progress').style.getPropertyValue('--remaining')) < 84,
+  'Completing a step fills one sixth of the XP-style bar'
+);
+check(glyphAnimations === glyphsBeforeStep + 6, 'Completing a step starts six enchanting glyphs');
 click('[data-theme-choice="ocean"]');
 check(
   $('.check-step.done') && $('#step-progress').textContent === '1 of 6 done',
@@ -434,12 +457,24 @@ check(
   'Finishing every step celebrates the completed item'
 );
 check(
+  completionScrolls.length === 1 &&
+    completionScrolls[0].behavior === 'smooth' &&
+    completionScrolls[0].block === 'center',
+  'Completing steps scrolls to the congratulations box'
+);
+
+check(
   playedSounds.some((src) => src.endsWith('/step.ogg')) &&
     playedSounds.filter((src) => src.endsWith('/levelup.ogg')).length === 1,
   'Steps play the quiet XP sound and completion plays one level-up sound'
 );
 click('[data-complete="6"]');
 check($('#completion').hidden, 'Unchecking a step hides the completion message');
+check($('#xp-progress').getAttribute('aria-valuenow') === '5', 'Undo lowers XP-style progress');
+check(
+  !$('[data-complete="6"]').closest('.check-step').querySelector('.enchant-particles'),
+  "Undo clears that step's particles"
+);
 click('[data-complete="6"]');
 check(
   $('#completion').classList.contains('celebrate') &&
@@ -453,6 +488,11 @@ check(
     $('#completion .finished-icon img').getAttribute('src').endsWith('diamond_helmet.png'),
   'Completion keeps the original item without the purple overlay'
 );
+check(
+  $('#xp-progress').getAttribute('aria-valuenow') === '6' &&
+    $('#xp-progress').style.getPropertyValue('--remaining') === '0%',
+  'Finishing all steps fills the XP bar completely'
+);
 const stepButton = $('[data-complete="6"]');
 check(
   stepButton.tagName === 'BUTTON' &&
@@ -465,6 +505,7 @@ check(
   'Large completion button is above the slots, not at the bottom'
 );
 const beforeUndo = playedSounds.length;
+const glyphsBeforeUndo = glyphAnimations;
 click('[data-complete="6"]');
 check(
   stepButton.getAttribute('aria-pressed') === 'false' &&
@@ -472,25 +513,100 @@ check(
     playedSounds.length === beforeUndo + 1,
   'Undo restores the button and plays just one click'
 );
+check(glyphAnimations === glyphsBeforeUndo, 'Undo does not start another particle burst');
 const beforeRedo = playedSounds.length;
 click('[data-complete="6"]');
 check(
   playedSounds.length === beforeRedo + 1 && playedSounds.at(-1).endsWith('/levelup.ogg'),
   'Finishing again plays only the celebration, without a duplicate click or ping'
 );
+click('#theme-motion');
+const glyphsWithMotionOff = glyphAnimations;
+click('[data-complete="6"]');
+click('[data-complete="6"]');
+check(
+  completionScrolls.at(-1).behavior === 'auto',
+  'Completion respects disabled motion when scrolling'
+);
+click('#theme-motion');
+
+check(glyphAnimations === glyphsWithMotionOff, 'Disabled motion suppresses enchanting particles');
+const { enchantParticles } = await import('../dist/motion.js');
+const reducedMotionBefore = motionPreference.matches;
+motionPreference.matches = true;
+enchantParticles($('.result-item'));
+check(glyphAnimations === glyphsWithMotionOff, 'System reduced motion also suppresses particles');
+motionPreference.matches = reducedMotionBefore;
 const dropdown = $('#version');
+dropdown.size = 0; // Model the native default omitted by the DOM harness.
+let pickerOpens = 0;
+dropdown.showPicker = () => {
+  pickerOpens++;
+};
 const beforeOpen = playedSounds.length;
 dropdown.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true }));
-dropdown.dispatchEvent(new window.Event('pointerdown', { bubbles: true }));
+check(pickerOpens === 0 && playedSounds.length === beforeOpen, 'Keyboard focus alone stays quiet');
+const openPointer = new window.PointerEvent('pointerdown', {
+  bubbles: true,
+  cancelable: true,
+  pointerType: 'mouse',
+  button: 0,
+});
+dropdown.dispatchEvent(openPointer);
+check(
+  pickerOpens === 1 && openPointer.defaultPrevented && playedSounds.length === beforeOpen + 1,
+  'Mouse press opens the picker directly and sounds once'
+);
 click('#version');
-check(playedSounds.length === beforeOpen, 'Focusing or opening a dropdown is silent');
 change('#version', 'java-1.21');
-check(playedSounds.length === beforeOpen + 1, 'Changing the dropdown value sounds exactly once');
-click('#version');
+check(
+  playedSounds.length === beforeOpen + 1,
+  'Choosing an option does not double the opening sound'
+);
 change('#version', 'java-1.21');
-check(playedSounds.length === beforeOpen + 1, 'Closing or reselecting the same value stays silent');
+check(playedSounds.length === beforeOpen + 1, 'Repeated change events stay silent');
 change('#version', 'java-26.3');
-check(playedSounds.length === beforeOpen + 2, 'A subsequent real selection sounds once');
+check(playedSounds.length === beforeOpen + 2, 'Keyboard selection still has sound');
+const labelPointer = new window.PointerEvent('pointerdown', {
+  bubbles: true,
+  cancelable: true,
+  pointerType: 'mouse',
+  button: 0,
+});
+dropdown.closest('label').dispatchEvent(labelPointer);
+check(
+  pickerOpens === 2 && labelPointer.defaultPrevented,
+  'The dropdown label opens its options too'
+);
+click('#version');
+document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+dropdown.showPicker = () => {
+  throw new Error('Unsupported');
+};
+const fallbackPointer = new window.PointerEvent('pointerdown', {
+  bubbles: true,
+  cancelable: true,
+  pointerType: 'mouse',
+  button: 0,
+});
+dropdown.dispatchEvent(fallbackPointer);
+check(!fallbackPointer.defaultPrevented, 'Blocked picker calls preserve native browser behaviour');
+const beforeFallback = playedSounds.length;
+dropdown.dispatchEvent(
+  new window.PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse', button: 0 })
+);
+check(playedSounds.length === beforeFallback + 1, 'Native fallback activation sounds once');
+delete dropdown.showPicker;
+const beforeTouch = playedSounds.length;
+dropdown.dispatchEvent(
+  new window.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', button: 0 })
+);
+dropdown.dispatchEvent(new window.PointerEvent('pointercancel', { bubbles: true }));
+dropdown.dispatchEvent(
+  new window.PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', button: 0 })
+);
+check(playedSounds.length === beforeTouch, 'Scrolling past a dropdown does not play a sound');
+document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
 
 check(
   soundVolumes
@@ -742,6 +858,7 @@ check(
     $('#steps-view').textContent.includes('No anvil steps needed'),
   'One enchanted book needs no operations'
 );
+check(!$('#xp-progress'), 'Zero-operation book needs no progress bar');
 click('[data-enchant="unbreaking"][data-level="3"]');
 click('#calculate');
 await tick();
@@ -760,6 +877,11 @@ check(
   'Both editions have Minecraft symbols'
 );
 click('#reset');
+
+check(
+  !$('#xp-progress') && !$('.enchant-particles'),
+  'Reset removes the progress bar and particles'
+);
 
 // Drive the counters with deterministic frame times, including cancellation and reduced motion.
 const { setStat, clearStat, finishCounters } = await import('../dist/stats.js');
