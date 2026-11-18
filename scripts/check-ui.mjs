@@ -30,14 +30,23 @@ globalThis.fetch = async (url) => ({
   json: async () => JSON.parse(await readFile(url, 'utf8')),
 });
 let workerStarts = 0;
+let deferWorkers = false;
+const workerJobs = [];
 globalThis.Worker = class {
   constructor() {
     workerStarts++;
+    workerJobs.push(this);
   }
   postMessage(data) {
-    queueMicrotask(() => this.onmessage({ data: { result: structuredClone(optimize(data)) } }));
+    this.request = structuredClone(data);
+    if (!deferWorkers) queueMicrotask(() => this.respond());
   }
-  terminate() {}
+  respond() {
+    this.onmessage({ data: { result: structuredClone(optimize(this.request)) } });
+  }
+  terminate() {
+    this.terminated = true;
+  }
 };
 const $ = (s) => document.querySelector(s);
 const hasPlan = () => !$('#export').disabled && !$('#plan-details').hidden;
@@ -890,6 +899,98 @@ check(hasPlan(), 'The edited selection can calculate a fresh plan');
 window.requestAnimationFrame = requestFrame;
 window.cancelAnimationFrame = cancelFrame;
 
+// Exercise delayed worker callbacks after edits and resets.
+deferWorkers = true;
+click('#reset');
+click('#preset');
+click('#calculate');
+const obsoleteJob = workerJobs.at(-1);
+change('#item', 'shield');
+click('#preset');
+click('#calculate');
+const currentJob = workerJobs.at(-1);
+obsoleteJob.onmessage({ data: { error: 'Outdated result' } });
+check(
+  $('#calculate').disabled && !currentJob.terminated && !hasPlan(),
+  'Late results cannot stop or replace a newer calculation'
+);
+obsoleteJob.onerror();
+check(
+  $('#calculate').disabled && !currentJob.terminated,
+  'Late errors cannot cancel a newer calculation'
+);
+currentJob.respond();
+check(
+  hasPlan() && $('#result-title').textContent.includes('shield'),
+  'The current calculation still finishes normally'
+);
+click('#calculate');
+const interruptedJob = workerJobs.at(-1);
+$('#item-uses').value = '2';
+$('#item-uses').dispatchEvent(new window.Event('input', { bubbles: true }));
+check(
+  interruptedJob.terminated && $('#export').disabled && !hasPlan(),
+  'Typing prior work invalidates old costs before blur'
+);
+interruptedJob.respond();
+check(!hasPlan() && !$('#calculate').disabled, 'A result arriving after an edit stays discarded');
+click('#calculate');
+check(workerJobs.at(-1).request.itemUses === 2, 'New calculations use the typed prior-work value');
+workerJobs.at(-1).respond();
+click('#book-history');
+click('#calculate');
+const bookJob = workerJobs.at(-1);
+const liveBookInput = $('[data-book-uses]');
+liveBookInput.value = '1';
+liveBookInput.dispatchEvent(new window.Event('input', { bubbles: true }));
+check(bookJob.terminated && !hasPlan(), 'Typing book history also invalidates immediately');
+click('#calculate');
+check(
+  workerJobs.at(-1).request.books.find((book) => book.id === liveBookInput.dataset.bookUses)
+    .uses === 1,
+  'Book calculations use the typed history value'
+);
+workerJobs.at(-1).respond();
+click('#book-history');
+change('#item', 'mace');
+click('#preset');
+click('[data-enchant="wind_burst"][data-level="1"]');
+click('#calculate');
+check(
+  workerJobs.at(-1).request.books.find((book) => book.id === 'wind_burst').uses === 0,
+  'Lowering Wind Burst removes preparation history when custom history is off'
+);
+workerJobs.at(-1).respond();
+click('#reset');
+check(
+  $('#steps-view').textContent.includes('No plan yet') &&
+    !$('#steps-view').textContent.includes('Update your plan'),
+  'Reset restores the fresh empty message'
+);
+click('#preset');
+const WorkingWorker = globalThis.Worker;
+globalThis.Worker = class {
+  constructor() {
+    throw new Error('Worker blocked');
+  }
+};
+click('#calculate');
+check(
+  !$('#calculate').disabled && $('#notice').textContent.includes('could not start'),
+  'A blocked worker leaves a usable calculate button and an error message'
+);
+globalThis.Worker = WorkingWorker;
+deferWorkers = false;
+$('#share-dialog').showModal();
+$('#close-share').focus();
+const slash = new window.KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+document.dispatchEvent(slash);
+check(
+  !slash.defaultPrevented && document.activeElement === $('#close-share'),
+  'Search shortcut leaves focus inside the share dialog'
+);
+$('#share-dialog').close();
+
 const startsBeforeShare = workerStarts;
 window.location.hash = new URL(sharedUrl).hash;
 await tick();
@@ -901,6 +1002,11 @@ check(
   'Opening a shared link restores the controls'
 );
 check(workerStarts === startsBeforeShare && !hasPlan(), 'Shared links wait for Show my steps');
+click('#reset');
+check(
+  window.location.hash === '' && $('#selection-count').textContent === '0',
+  'Reset removes shared URL data so a reload cannot restore the old setup'
+);
 window.history.replaceState(null, '', '/');
 
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.

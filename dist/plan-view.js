@@ -26,8 +26,8 @@ export function showPlan(plan, settings) {
   renderResult();
 }
 
-export function clearPlan({ fresh = false } = {}) {
-  needsUpdate = !fresh && (needsUpdate || Boolean(result));
+export function clearPlan({ fresh = false, reset = false } = {}) {
+  needsUpdate = !fresh && !reset && (needsUpdate || Boolean(result));
   result = null;
   context = null;
   completed.clear();

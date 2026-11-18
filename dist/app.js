@@ -99,10 +99,10 @@ function notice(message) {
   $('#notice').hidden = !message;
   if (message) reveal($('#notice'));
 }
-function invalidate(message = '') {
+function invalidate(message = '', options = {}) {
   worker?.terminate();
   worker = null;
-  clearPlan();
+  clearPlan(options);
   $('#calculate').disabled = false;
   $('#calculate').firstElementChild.textContent = 'Show my steps';
   notice(message);
@@ -178,9 +178,18 @@ function calculate() {
   $('#calculate').disabled = true;
   $('#calculate').firstElementChild.textContent = 'Calculating…';
   worker?.terminate();
-  worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-  worker.onmessage = ({ data }) => {
-    worker.terminate();
+  let job;
+  try {
+    job = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+  } catch {
+    worker = null;
+    invalidate('The calculator could not start. Refresh the page and try again.');
+    return;
+  }
+  worker = job;
+  job.onmessage = ({ data }) => {
+    if (worker !== job) return;
+    job.terminate();
     worker = null;
     $('#calculate').disabled = false;
     $('#calculate').firstElementChild.textContent = 'Show my steps';
@@ -206,12 +215,13 @@ function calculate() {
         'Theoretical plan: these enchantments conflict in the selected version. This result requires commands or mods and cannot be created in vanilla Survival.'
       );
   };
-  worker.onerror = () => {
-    worker?.terminate();
+  job.onerror = () => {
+    if (worker !== job) return;
+    job.terminate();
     worker = null;
     invalidate('The calculator could not start. Refresh the page and try again.');
   };
-  worker.postMessage({
+  job.postMessage({
     books,
     item: state.item,
     itemUses: state.itemUses,
@@ -254,22 +264,33 @@ $('#enchantments').addEventListener('click', (e) => {
   else
     state.selected[id] = {
       level,
-      uses: Math.max(state.selected[id]?.uses || 0, minimumBookUses(id, level)),
+      uses: Math.max(
+        state.bookHistory ? state.selected[id]?.uses || 0 : 0,
+        minimumBookUses(id, level)
+      ),
     };
   invalidate();
   renderEnchantments();
 });
-$('#enchantments').addEventListener('change', (e) => {
-  if (!e.target.dataset.bookUses) return;
-  state.selected[e.target.dataset.bookUses].uses =
-    e.target.value === '' ? NaN : Number(e.target.value);
+function updateBookUses(e) {
+  const book = state.selected[e.target.dataset.bookUses];
+  if (!book) return;
+  const uses = e.target.value === '' ? NaN : Number(e.target.value);
+  if (Object.is(book.uses, uses)) return;
+  book.uses = uses;
   invalidate();
-});
+}
+function updateItemUses(e) {
+  const uses = e.target.value === '' ? NaN : Number(e.target.value);
+  if (Object.is(state.itemUses, uses)) return;
+  state.itemUses = uses;
+  invalidate();
+}
+for (const event of ['input', 'change']) {
+  $('#enchantments').addEventListener(event, updateBookUses);
+  $('#item-uses').addEventListener(event, updateItemUses);
+}
 $('#search').addEventListener('input', renderEnchantments);
-$('#item-uses').addEventListener('change', (e) => {
-  state.itemUses = e.target.value === '' ? NaN : Number(e.target.value);
-  invalidate();
-});
 $('#objective').addEventListener('change', (e) => {
   state.objective = e.target.value;
   invalidate();
@@ -299,7 +320,14 @@ $('#preset').addEventListener('click', applyPreset);
 $('#reset').addEventListener('click', () => {
   state = defaults();
   $('#search').value = '';
-  invalidate('');
+  invalidate('', { reset: true });
+  if (window.location.hash.startsWith('#plan=')) {
+    window.history.replaceState(
+      window.history.state,
+      '',
+      window.location.pathname + window.location.search
+    );
+  }
   renderControls();
 });
 $('#calculate').addEventListener('click', calculate);
@@ -320,7 +348,8 @@ document.addEventListener('keydown', (e) => {
   if (
     e.key === '/' &&
     !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName) &&
-    !$('#help').open
+    !document.activeElement.isContentEditable &&
+    !document.querySelector('dialog[open]')
   ) {
     e.preventDefault();
     $('#search').focus();
