@@ -1,3 +1,4 @@
+import { buildRequest } from './planner-model.js';
 import { PROFILES, itemsFor, enchantsFor, conflicts, minimumBookUses } from './data.js';
 
 const fail = () => {
@@ -12,11 +13,12 @@ export function readSharedPlan(hash, raw) {
   } catch {
     return fail();
   }
-  if (!Array.isArray(data) || data.length !== 7) return fail();
-  const [format, version, item, itemUses, objective, flags, books] = data;
+  if (!Array.isArray(data) || ![7, 8].includes(data.length)) return fail();
+  const [format, version, item, itemUses, objective, flags, books, initial = []] = data;
   const profile = PROFILES.find((p) => p.id === version);
   if (
-    format !== 1 ||
+    ![1, 2].includes(format) ||
+    data.length !== (format === 1 ? 7 : 8) ||
     !profile ||
     !itemsFor(profile).some(([id]) => id === item) ||
     !Number.isInteger(itemUses) ||
@@ -26,8 +28,9 @@ export function readSharedPlan(hash, raw) {
     !Number.isInteger(flags) ||
     flags < 0 ||
     flags > 15 ||
+    !Array.isArray(initial) ||
     !Array.isArray(books) ||
-    !books.length ||
+    (!books.length && !initial.length) ||
     books.length > (flags & 2 ? 13 : 10)
   )
     return fail();
@@ -51,7 +54,16 @@ export function readSharedPlan(hash, raw) {
       return fail();
     selected[id] = { level, uses };
   }
-  return {
+  const existing = {};
+  if (!Array.isArray(initial) || initial.length > available.length) return fail();
+  for (const entry of initial) {
+    if (!Array.isArray(entry) || entry.length !== 2) return fail();
+    const [id, level] = entry;
+    if (!available.some((e) => e.id === id) || Object.hasOwn(existing, id)) return fail();
+    existing[id] = level;
+  }
+  const state = {
+    existing,
     edition: profile.edition,
     version,
     item,
@@ -63,6 +75,12 @@ export function readSharedPlan(hash, raw) {
     bookHistory: Boolean(flags & 4) || books.some(([, , uses]) => uses > 0),
     showCurses: Boolean(flags & 8) || books.some(([id]) => id.endsWith('_curse')),
   };
+  try {
+    buildRequest(state, raw);
+  } catch {
+    return fail();
+  }
+  return state;
 }
 export function createShareUrl(state, base = window.location.href) {
   const flags =
@@ -75,7 +93,20 @@ export function createShareUrl(state, base = window.location.href) {
   url.hash =
     'plan=' +
     encodeURIComponent(
-      JSON.stringify([1, state.version, state.item, state.itemUses, state.objective, flags, books])
+      JSON.stringify(
+        Object.keys(state.existing || {}).length
+          ? [
+              2,
+              state.version,
+              state.item,
+              state.itemUses,
+              state.objective,
+              flags,
+              books,
+              Object.entries(state.existing),
+            ]
+          : [1, state.version, state.item, state.itemUses, state.objective, flags, books]
+      )
     );
   return url.href;
 }

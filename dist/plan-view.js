@@ -4,6 +4,8 @@ import { $, escape, enchantLabel, gearIcon } from './ui.js';
 import { reveal, motionEnabled, enchantParticles } from './motion.js';
 import { setStat, clearStat, updateCount } from './stats.js';
 import { playSound } from './sounds.js';
+import { itemTooltip, tooltipAttributes } from './planner-tools.js';
+import { nodeEnchantments, bookKey, planSignature } from './planner-model.js';
 
 let result = null;
 let needsUpdate = false;
@@ -13,8 +15,9 @@ let fitGraph = true;
 let activeStep = 1;
 let currentView = 'steps';
 const completed = new Set();
+const gathered = new Set();
 
-export function showPlan(plan, settings) {
+export function showPlan(plan, settings, saved = null) {
   needsUpdate = false;
   result = plan;
   context = settings;
@@ -22,8 +25,16 @@ export function showPlan(plan, settings) {
   fitGraph = true;
   activeStep = 1;
   completed.clear();
+  gathered.clear();
+  if (saved?.signature === planSignature(plan)) {
+    for (const step of saved.completed || [])
+      if (plan.steps.some((s) => s.step === step)) completed.add(step);
+    for (const key of saved.gathered || [])
+      if (plan.books.some((book) => bookKey(book) === key)) gathered.add(key);
+  }
   setGraphMode('step');
   renderResult();
+  emitPlan('planchange');
 }
 
 export function clearPlan({ fresh = false, reset = false } = {}) {
@@ -31,6 +42,8 @@ export function clearPlan({ fresh = false, reset = false } = {}) {
   result = null;
   context = null;
   completed.clear();
+  gathered.clear();
+  emitPlan('planchange');
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
     clearStat($('#' + id), { immediate: fresh });
   }
@@ -72,9 +85,24 @@ function nodeTitle(node) {
   return `${isEquipment(node) ? itemName(context.item) : 'Book'} from step ${node.step}`;
 }
 function nodeEnchants(node) {
-  return result.books
-    .filter((_, i) => node.mask & (1 << (i + (context.item === 'book' ? 0 : 1))))
-    .map((b) => enchantLabel(b.id, b.level));
+  return nodeEnchantments(result, context, node).map((e) => enchantLabel(e.id, e.level));
+}
+function emitPlan(name) {
+  document.dispatchEvent(
+    new window.CustomEvent(name, {
+      detail: result
+        ? {
+            result,
+            settings: context,
+            progress: {
+              completed: [...completed],
+              gathered: [...gathered],
+              signature: planSignature(result),
+            },
+          }
+        : null,
+    })
+  );
 }
 function slot(node, label) {
   const output = label === 'RESULT';
@@ -82,6 +110,8 @@ function slot(node, label) {
   const name = output ? (isGear ? itemName(context.item) : 'Combined book') : nodeTitle(node);
   let description = node.leaf === 0 ? 'Starting item' : 'Enchanted book';
   if (node.leaf === undefined) description = 'Use the result of this step';
+  if (node.leaf === 0 && Object.keys(context.existing || {}).length)
+    description = 'Your existing enchantments';
   if (output) {
     const count = nodeEnchants(node).length;
     description = `${count} enchantment${count === 1 ? '' : 's'}`;
@@ -90,7 +120,7 @@ function slot(node, label) {
     <div class="slot ${output ? 'output-slot' : ''}">
       <small>${label}</small>
       <div class="slot-content">
-        ${output ? '<span class="result-item">' + gearIcon(isGear ? context.item : 'enchanted_book') + '</span>' : gearIcon(isGear ? context.item : 'enchanted_book')}
+        ${output ? '<span class="result-item">' + itemTooltip(isGear ? context.item : 'enchanted_book', name, nodeEnchantments(result, context, node)) + '</span>' : itemTooltip(isGear ? context.item : 'enchanted_book', name, nodeEnchantments(result, context, node))}
         <div>
           <strong>${escape(name)}</strong>
           <span class="slot-subtitle">${description}</span>
@@ -147,7 +177,7 @@ function compactInput(node, label) {
   return `<${tag} class="compact-node ${isGear ? 'gear-node' : 'book-node'}"
     ${fromStep ? `type="button" data-step="${node.step}" aria-label="Go to step ${node.step}"` : ''}>
     <small>${label}</small>
-    ${gearIcon(isGear ? context.item : 'enchanted_book')}
+    ${fromStep ? gearIcon(isGear ? context.item : 'enchanted_book') : itemTooltip(isGear ? context.item : 'enchanted_book', nodeTitle(node), nodeEnchantments(result, context, node))}
     <strong>${escape(nodeTitle(node))}</strong>
     <span>${fromStep ? 'View this earlier step ↗' : isGear ? 'Starting item' : 'Enchanted book'}</span>
   </${tag}>`;
@@ -172,7 +202,7 @@ function renderCompactGraph(step) {
       <path d="M144 40 L150 46 L156 40"/>
     </svg>
     <div class="compact-node compact-result">
-      ${gearIcon(isEquipment(step) ? context.item : 'enchanted_book')}
+      ${itemTooltip(isEquipment(step) ? context.item : 'enchanted_book', isEquipment(step) ? itemName(context.item) : 'Combined book', nodeEnchantments(result, context, step))}
       <div><small>RESULT · ${step.cost} LEVELS</small>
         <strong>${step === result.root ? 'Finished ' : ''}${isEquipment(step) ? escape(itemName(context.item)) : 'Combined book'}</strong>
         <span>${nodeEnchants(step).map(escape).join(' · ')}</span>
@@ -233,8 +263,9 @@ function graphCard(node) {
       x="9" y="9" width="19" height="19" preserveAspectRatio="xMidYMid meet"/>`;
   const shortTitle = title.length > 24 ? title.slice(0, 23) + '…' : title;
   return `
-    <g transform="translate(${node.x},${node.y})" ${attributes}>
-      <title>${escape(title)}</title>
+    <g transform="translate(${node.x},${node.y})" ${attributes}
+      ${!combine ? `tabindex="0" role="img" aria-label="${escape(title)}" ${tooltipAttributes(title, nodeEnchantments(result, context, node))}` : ''}>
+      ${combine ? `<title>${escape(title)}</title>` : ''}
       <rect class="node-bg ${combine ? 'merge-bg' : isGear ? '' : 'book-bg'}"
         width="224" height="82" rx="7"/>
       ${icon}
@@ -276,6 +307,12 @@ function renderGraph() {
   applyZoom();
 }
 function readyBook() {
+  if (context?.item !== 'book')
+    return (
+      '<div class="empty-state">' +
+      itemTooltip(context.item, itemName(context.item), nodeEnchantments(result, context)) +
+      '<h3>Your item is ready</h3><p>No books to add. Your existing enchantments are already on the item.</p></div>'
+    );
   return (
     '<div class="empty-state">' +
     gearIcon('enchanted_book') +
@@ -284,11 +321,12 @@ function readyBook() {
 }
 function renderSteps() {
   if (!result.steps.length) {
-    $('#steps-view').innerHTML = readyBook();
+    $('#steps-view').innerHTML = (result.books.length ? bookChecklist() : '') + readyBook();
     reveal($('#steps-view'));
     return;
   }
   $('#steps-view').innerHTML =
+    bookChecklist() +
     `<div class="steps-intro"><p>Follow these in order. Keep the anvil slots as shown.</p><span id="step-progress">${completed.size} of ${result.steps.length} done</span></div>` +
     `<div id="xp-progress" class="xp-progress" role="progressbar" aria-label="Enchanting steps completed"
       aria-describedby="step-progress" aria-valuemin="0" aria-valuemax="${result.steps.length}"
@@ -319,6 +357,20 @@ function renderSteps() {
       )
       .join('') +
     completionCard();
+  $('#completion').hidden = completed.size !== result.steps.length;
+}
+function bookChecklist() {
+  return `<details class="book-checklist"><summary>Books to gather <span id="gather-count">${gathered.size} of ${result.books.length} ready</span></summary>
+    <p>One separate book per row, already at the listed level. “Got it” only tracks your supplies.</p>
+    <div>${result.books
+      .map(
+        (book) => `<label class="gather-book">
+      ${gearIcon('enchanted_book')}<span>${escape(enchantLabel(book.id, book.level))}<small>Prior-work count: ${book.uses}</small></span>
+      <span><input type="checkbox" data-gather="${bookKey(book)}" ${gathered.has(bookKey(book)) ? 'checked' : ''}> Got it</span>
+    </label>`
+      )
+      .join('')}</div>
+  </details>`;
 }
 function completionCard() {
   const name = context.item === 'book' ? 'book' : itemName(context.item).toLowerCase();
@@ -328,7 +380,7 @@ function completionCard() {
       `<i style="--x: ${Math.round(Math.cos((i * Math.PI) / 6) * 95)}px; --y: ${Math.round(Math.sin((i * Math.PI) / 6) * 60)}px; --turn: ${i * 45}deg"></i>`
   ).join('');
   return `<div id="completion" class="completion-card" role="status" hidden>
-    <div class="finished-icon" aria-hidden="true">${gearIcon(context.item === 'book' ? 'enchanted_book' : context.item)}<span class="finish-particles">${particles}</span></div>
+    <div class="finished-icon" aria-hidden="true">${itemTooltip(context.item === 'book' ? 'enchanted_book' : context.item, itemName(context.item), nodeEnchantments(result, context))}<span class="finish-particles">${particles}</span></div>
     <div><h3>Your ${escape(name)} is ready!</h3><p>Every anvil step is done. Enjoy your gear.</p></div>
   </div>`;
 }
@@ -346,7 +398,7 @@ function renderResult() {
     : 'Every step is within the limit';
   $('#penalty-note').textContent = `Final work penalty: ${result.finalPenalty}`;
   $('#plan-footnote').textContent =
-    `${result.xp.toLocaleString()} XP if you recharge from level 0 for each step. One separate book per enchantment, already at the selected level. ${context.objective === 'penalty' ? 'Optimized for lowest final work penalty, then total levels.' : context.objective === 'xp' ? 'Optimized for that XP strategy.' : 'Optimized for fewest total levels.'}`;
+    `${result.xp.toLocaleString()} XP if you recharge from level 0 for each step. One separate book per selected enchantment, already at the selected level. Existing item enchantments are kept. ${context.objective === 'penalty' ? 'Optimized for lowest final work penalty, then total levels.' : context.objective === 'xp' ? 'Optimized for that XP strategy.' : 'Optimized for fewest total levels.'}`;
   $('#export').disabled = false;
   $('#graph-mode').hidden = !result.steps.length;
   for (const id of ['zoom-in', 'zoom-out', 'zoom-fit']) $('#' + id).disabled = false;
@@ -400,7 +452,11 @@ function exportPlan() {
     'INPUTS',
     context.item === 'book'
       ? 'Combine the enchanted books below.'
-      : `Unenchanted ${itemName(context.item)}, prior-work count ${context.itemUses}`,
+      : `${itemName(context.item)}, prior-work count ${context.itemUses}. Already on item: ${
+          Object.entries(context.existing || {})
+            .map(([id, level]) => enchantLabel(id, level))
+            .join(', ') || 'none'
+        }`,
     ...result.books.map((b) => `${enchantLabel(b.id, b.level)} book, prior-work count ${b.uses}`),
     '',
     'ORDER',
@@ -453,6 +509,14 @@ $('#graph').addEventListener('keydown', (e) => {
     e.target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   }
 });
+$('#steps-view').addEventListener('change', (event) => {
+  const key = event.target.dataset.gather;
+  if (!result || !key || !result.books.some((book) => bookKey(book) === key)) return;
+  if (event.target.checked) gathered.add(key);
+  else gathered.delete(key);
+  updateCount($('#gather-count'), `${gathered.size} of ${result.books.length} ready`);
+  emitPlan('planprogress');
+});
 $('#steps-view').addEventListener('click', (e) => {
   const button = e.target.closest('[data-complete]');
   if (!button || !result) return;
@@ -485,6 +549,7 @@ $('#steps-view').addEventListener('click', (e) => {
     playSound('levelup');
     card.scrollIntoView({ behavior: motionEnabled() ? 'smooth' : 'auto', block: 'center' });
   } else playSound(done ? 'step' : 'click');
+  emitPlan('planprogress');
 });
 $('#zoom-in').addEventListener('click', () => {
   zoom = Math.min(3, zoom + 0.25);

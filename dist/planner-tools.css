@@ -1,0 +1,305 @@
+/* Optional planner tools stay collapsed until needed. */
+.existing-panel,
+.compare-panel,
+.book-checklist {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px;
+  margin: 16px 0;
+  background: var(--panel);
+  min-width: 0;
+}
+.existing-panel summary,
+.compare-panel summary,
+.book-checklist summary {
+  cursor: pointer;
+  min-height: 32px;
+  line-height: 1.6;
+  font-size: 14px;
+  font-weight: 600;
+}
+.existing-panel p,
+.compare-panel p,
+.book-checklist p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+#existing-count,
+#gather-count {
+  color: var(--accent);
+  margin-left: 8px;
+  font-size: 13px;
+}
+#existing-enchantments {
+  display: grid;
+  gap: 8px;
+}
+#existing-enchantments label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+}
+#existing-enchantments select {
+  min-height: 44px;
+  width: 100%;
+}
+.existing-hint {
+  width: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.resume-banner {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  border: 1px solid var(--accent-border);
+  border-radius: 9px;
+  background: var(--panel);
+  padding: 16px;
+  margin-bottom: 18px;
+}
+.resume-banner > div {
+  flex: 1 1 220px;
+}
+.resume-banner p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.resume-banner button,
+.compare-panel button {
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 10px 14px;
+  min-height: 44px;
+  color: var(--text);
+  background: var(--surface);
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.compare-grid section {
+  min-width: 0;
+}
+.compare-grid h3 {
+  font-size: 16px;
+}
+.compare-grid li {
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.compare-grid ul {
+  padding-left: 18px;
+}
+.compare-grid dl {
+  font-size: 14px;
+}
+.compare-grid dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.compare-grid dd {
+  margin: 0;
+  color: var(--accent);
+}
+#compare-difference {
+  color: var(--accent);
+}
+.gather-book {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 14px;
+}
+.gather-book > img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.gather-book > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.gather-book small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.gather-book > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.gather-book input {
+  width: 20px;
+  height: 20px;
+}
+.item-inspect {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 2px;
+  border: 0;
+  border-radius: 3px;
+  color: inherit;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: help;
+}
+.item-inspect:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.item-inspect:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.item-inspect img {
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.minecraft-tooltip {
+  position: fixed;
+  z-index: 100;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 16px));
+  padding: 12px 15px;
+  color: #c4a4e7;
+  background: #100914f5;
+  border: 2px solid #51258b;
+  box-shadow:
+    0 0 0 2px #09050e,
+    inset 0 0 0 1px #210c3a;
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+}
+.minecraft-tooltip strong,
+.minecraft-tooltip span {
+  display: block;
+}
+.minecraft-tooltip strong {
+  color: #fff;
+  margin-bottom: 4px;
+}
+.curse {
+  color: #ff7777;
+}
+.item-card-dialog {
+  width: min(570px, calc(100vw - 24px));
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel);
+}
+.item-card-dialog::backdrop {
+  background: #000a;
+}
+.item-card-dialog h2 {
+  font-size: 22px;
+}
+#item-card-preview {
+  padding: 22px;
+  background: #100914;
+  color: #c4a4e7;
+  border: 2px solid #51258b;
+  font-family: ui-monospace, monospace;
+}
+.card-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.card-preview-heading img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.card-preview-heading h3 {
+  color: white;
+  margin: 0;
+}
+.card-preview-heading p {
+  margin: 6px 0;
+}
+#item-card-preview ul {
+  padding-left: 0;
+  list-style: none;
+  line-height: 1.8;
+  font-size: 16px;
+}
+#item-card-preview p,
+#item-card-status {
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+  .compare-grid section + section {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .gather-book {
+    gap: 8px;
+  }
+  .gather-book > img {
+    width: 24px;
+    height: 24px;
+  }
+  .item-card-dialog {
+    padding: 16px;
+  }
+  #item-card-preview {
+    padding: 16px;
+  }
+}
+@media print {
+  .resume-banner,
+  .existing-panel,
+  .compare-panel,
+  .minecraft-tooltip,
+  .item-card-dialog,
+  #item-card {
+    display: none;
+  }
+  .item-inspect {
+    min-width: 0;
+    padding: 0;
+  }
+}
+
+#flow-svg [data-item-title]:focus {
+  outline: none;
+}
+#flow-svg [data-item-title]:focus-visible .node-bg {
+  stroke: var(--accent);
+  stroke-width: 2;
+}

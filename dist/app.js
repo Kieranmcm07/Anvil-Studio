@@ -1,4 +1,7 @@
 import { PROFILES, itemName, enchantsFor, itemsFor, conflicts, minimumBookUses } from './data.js';
+import { buildRequest, upgradedLevel } from './planner-model.js';
+import { saveSession, readSession, clearSession } from './session.js';
+import { setupPlannerTools, itemTooltip } from './planner-tools.js';
 import { $, gearIcon } from './ui.js';
 import { clearPlan, showPlan } from './plan-view.js';
 import { renderPicker } from './enchantment-picker.js';
@@ -14,6 +17,7 @@ const defaults = () => ({
   version: 'java-26.3',
   item: 'helmet',
   selected: {},
+  existing: {},
   itemUses: 0,
   objective: 'levels',
   incompatible: false,
@@ -28,6 +32,21 @@ const profile = () => PROFILES.find((p) => p.id === state.version);
 const available = () => enchantsFor(raw, profile(), state.item);
 function cleanSelections() {
   const valid = available();
+  const existing = {};
+  for (const [id, level] of Object.entries(state.existing || {})) {
+    const e = valid.find((e) => e.id === id);
+    if (
+      state.item !== 'book' &&
+      e &&
+      Number.isInteger(level) &&
+      level > 0 &&
+      level <= e.max &&
+      (state.incompatible ||
+        !Object.keys(existing).some((other) => conflicts(id, other, profile(), raw)))
+    )
+      existing[id] = level;
+  }
+  state.existing = existing;
   state.selected = Object.fromEntries(
     Object.entries(state.selected).filter(
       ([id, v]) =>
@@ -42,8 +61,18 @@ function cleanSelections() {
   if (!state.incompatible) {
     const keep = {};
     for (const [id, v] of Object.entries(state.selected))
-      if (!Object.keys(keep).some((other) => conflicts(id, other, profile(), raw))) keep[id] = v;
+      if (
+        !Object.keys({ ...state.existing, ...keep }).some((other) =>
+          conflicts(id, other, profile(), raw)
+        )
+      )
+        keep[id] = v;
     state.selected = keep;
+  }
+  for (const [id, v] of Object.entries(state.selected)) {
+    const initial = state.existing[id] || 0;
+    if (initial && upgradedLevel(initial, v.level, valid.find((e) => e.id === id).max) <= initial)
+      delete state.selected[id];
   }
   for (const [id, v] of Object.entries(state.selected))
     v.uses = Math.max(v.uses, minimumBookUses(id, v.level));
@@ -93,7 +122,12 @@ function renderControls() {
 }
 function renderEnchantments() {
   renderPicker(available(), state, profile(), raw);
-  $('#share').disabled = !Object.keys(state.selected).length;
+  $('#share').disabled = !Object.keys(state.selected).length && !Object.keys(state.existing).length;
+  $('#gear-icon').innerHTML = itemTooltip(
+    state.item,
+    itemName(state.item),
+    Object.entries(state.existing).map(([id, level]) => ({ id, level }))
+  );
 }
 function notice(message) {
   $('#notice').textContent = message;
@@ -132,50 +166,26 @@ function applyPreset() {
   for (const e of available())
     if (
       !skip.has(e.id) &&
-      !Object.keys(state.selected).some((id) => conflicts(id, e.id, profile(), raw))
+      !Object.keys({ ...state.existing, ...state.selected }).some((id) =>
+        conflicts(id, e.id, profile(), raw)
+      ) &&
+      e.max > (state.existing[e.id] || 0)
     )
       state.selected[e.id] = { level: e.max, uses: minimumBookUses(e.id, e.max) };
   invalidate();
   renderEnchantments();
 }
-function calculate() {
-  const entries = available(),
-    selected = Object.entries(state.selected);
-  if (!selected.length) {
-    notice('Select at least one enchantment to create a plan.');
+function calculate({ progress, quiet = false } = {}) {
+  let request;
+  try {
+    request = buildRequest(state, raw);
+  } catch (error) {
+    notice(error.message);
     return;
   }
-  if (selected.length > (state.moreTen ? 13 : 10)) {
-    notice(
-      `You selected ${selected.length} enchantments. ${state.moreTen ? 'The exact-search limit is 13.' : 'Enable “Allow more than 10 enchantments” in Advanced options.'}`
-    );
-    return;
-  }
-  if (!Number.isInteger(state.itemUses) || state.itemUses < 0 || state.itemUses > 6) {
-    notice('Item prior-work count must be a whole number between 0 and 6.');
-    return;
-  }
-  const books = selected.map(([id, v]) => ({
-    id,
-    level: v.level,
-    uses: v.uses,
-    cost: entries.find((e) => e.id === id).bookCost,
-  }));
-  if (books.some((b) => !Number.isInteger(b.uses) || b.uses < 0 || b.uses > 6)) {
-    notice('Each book’s prior-work count must be a whole number between 0 and 6.');
-    return;
-  }
-  if (books.some((b) => b.uses < minimumBookUses(b.id, b.level))) {
-    notice(
-      'Wind Burst II/III must be prepared from level I books. Set its prior-work count to at least its level minus one.'
-    );
-    return;
-  }
-  const incompatible = selected.some(([id], i) =>
-    selected.slice(i + 1).some(([other]) => conflicts(id, other, profile(), raw))
-  );
   notice('');
-  playSound('enchant');
+  if (!quiet) playSound('enchant');
+  const settings = structuredClone({ ...state, profile: profile() });
   $('#calculate').disabled = true;
   $('#calculate').firstElementChild.textContent = 'Calculating…';
   worker?.terminate();
@@ -204,17 +214,16 @@ function calculate() {
       );
       return;
     }
-    showPlan({ ...data.result, theoretical: incompatible }, { ...state, profile: profile() });
+    showPlan({ ...data.result, theoretical: !request.survival }, settings, progress);
+    $('#resume-banner').hidden = true;
     if (window.matchMedia('(max-width: 1100px)').matches) {
       $('.results').scrollIntoView({
         behavior: motionEnabled() ? 'smooth' : 'auto',
         block: 'start',
       });
     }
-    if (incompatible)
-      notice(
-        'Theoretical plan: these enchantments conflict in the selected version. This result requires commands or mods and cannot be created in vanilla Survival.'
-      );
+    if (!request.survival)
+      notice('Theoretical plan: these enchantments conflict. It requires commands or mods.');
   };
   job.onerror = () => {
     if (worker !== job) return;
@@ -222,15 +231,9 @@ function calculate() {
     worker = null;
     invalidate('The calculator could not start. Refresh the page and try again.');
   };
-  job.postMessage({
-    books,
-    item: state.item,
-    itemUses: state.itemUses,
-    objective: state.objective,
-    survival: !incompatible,
-    legacyBow: profile().legacyBow && !incompatible,
-  });
+  job.postMessage(request);
 }
+
 document.querySelectorAll('[data-edition]').forEach((b) =>
   b.addEventListener('click', () => {
     if (state.edition === b.dataset.edition) return;
@@ -251,10 +254,22 @@ $('#version').addEventListener('change', (e) => {
 $('#item').addEventListener('change', (e) => {
   state.item = e.target.value;
   state.selected = {};
+  state.existing = {};
   state.itemUses = 0;
   $('#search').value = '';
   invalidate();
   renderControls();
+});
+$('#existing-enchantments').addEventListener('change', (event) => {
+  const id = event.target.dataset.existing;
+  if (!id) return;
+  const level = Number(event.target.value);
+  if (level) state.existing[id] = level;
+  else delete state.existing[id];
+  cleanSelections();
+  invalidate();
+  renderEnchantments();
+  document.querySelector('[data-existing="' + id + '"]')?.focus({ preventScroll: true });
 });
 $('#enchantments').addEventListener('click', (e) => {
   const b = e.target.closest('[data-enchant]');
@@ -320,6 +335,9 @@ $('#show-curses').addEventListener('change', (e) => {
 $('#preset').addEventListener('click', applyPreset);
 $('#reset').addEventListener('click', () => {
   state = defaults();
+  clearSession();
+  toolsUI.reset();
+  $('#resume-banner').hidden = true;
   $('#search').value = '';
   invalidate('', { reset: true });
   if (window.location.hash.startsWith('#plan=')) {
@@ -331,7 +349,7 @@ $('#reset').addEventListener('click', () => {
   }
   renderControls();
 });
-$('#calculate').addEventListener('click', calculate);
+$('#calculate').addEventListener('click', () => calculate());
 for (const id of ['help-button', 'sources-button'])
   $('#' + id).addEventListener('click', () => {
     $('#help').showModal();
@@ -357,6 +375,38 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function loadBuild(settings) {
+  state = structuredClone(settings);
+  state.existing ||= {};
+  $('#search').value = '';
+  cleanSelections();
+  invalidate();
+  renderControls();
+  calculate();
+}
+const toolsUI = setupPlannerTools(loadBuild);
+for (const eventName of ['planchange', 'planprogress']) {
+  document.addEventListener(eventName, (event) => {
+    if (event.detail) saveSession(event.detail.settings, event.detail.progress);
+  });
+}
+$('#resume-plan').addEventListener('click', () => {
+  const saved = readSession(raw);
+  if (!saved) {
+    $('#resume-banner').hidden = true;
+    notice('That saved plan is no longer available. Choose your enchantments to start again.');
+    return;
+  }
+  state = saved.state;
+  $('#search').value = '';
+  invalidate();
+  renderControls();
+  calculate({ progress: saved.progress, quiet: true });
+});
+$('#forget-plan').addEventListener('click', () => {
+  clearSession();
+  $('#resume-banner').hidden = true;
+});
 setupGithubLinks();
 setupThemes();
 setupMotion();
@@ -379,6 +429,14 @@ try {
   raw = (await response.json()).enchantments;
   loadSharedSetup();
   renderControls();
+  const saved = readSession(raw);
+  $('#resume-banner').hidden = !saved;
+  if (saved)
+    $('#resume-summary').textContent =
+      itemName(saved.state.item) +
+      ' · ' +
+      saved.progress.completed.length +
+      ' steps checked. Stored on this device.';
 } catch {
   notice('The game data could not load. Refresh the page and try again.');
   $('#calculate').disabled = true;

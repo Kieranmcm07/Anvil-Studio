@@ -1,5 +1,7 @@
 // Exact subset dynamic programming. Keep the cheapest tree at each possible
 // repair penalty: a locally cheap tree with a larger penalty can cost more later.
+import { upgradedLevel } from './planner-model.js';
+
 export const penalty = (uses) => 2 ** uses - 1;
 export function xpForLevel(level) {
   if (level <= 16) return level * level + 6 * level;
@@ -10,6 +12,8 @@ export function optimize({
   books,
   item = 'helmet',
   itemUses = 0,
+  existing = [],
+  edition = 'java',
   objective = 'levels',
   survival = true,
   legacyBow = false,
@@ -33,10 +37,20 @@ export function optimize({
       b.uses > 6
     )
       throw new Error('Invalid book level, cost, or prior-work count.');
+  if (!['java', 'bedrock'].includes(edition)) throw new Error('Unknown Minecraft edition.');
+  if (
+    !Array.isArray(existing) ||
+    new Set(existing.map((e) => e.id)).size !== existing.length ||
+    existing.some((e) => !Number.isInteger(e.level) || e.level < 1 || e.level > (e.max || 5))
+  )
+    throw new Error('Invalid existing enchantments.');
+  const initial = Object.fromEntries(existing.map((e) => [e.id, e.level]));
   const bookOnly = item === 'book';
+  if (bookOnly && existing.length) throw new Error('Book mode starts with separate books.');
   if (bookOnly && !books.length) throw new Error('Select at least one enchanted book.');
   const n = books.length + (bookOnly ? 0 : 1),
     limit = 1 << n;
+  const gearSums = new Int32Array(limit);
   const sums = new Int32Array(limit),
     dp = new Array(limit);
   let mending = 0,
@@ -45,11 +59,19 @@ export function optimize({
     if (b.id === 'mending') mending = 1 << (i + (bookOnly ? 0 : 1));
     if (b.id === 'infinity') infinity = 1 << (i + (bookOnly ? 0 : 1));
   });
+  if (!bookOnly) {
+    if (initial.mending) mending |= 1;
+    if (initial.infinity) infinity |= 1;
+  }
   for (let mask = 1; mask < limit; mask++) {
     const bit = mask & -mask,
       index = 31 - Math.clz32(bit);
     const b = books[bookOnly ? index : index - 1];
     sums[mask] = sums[mask ^ bit] + (b ? b.level * b.cost : 0);
+    const start = b ? initial[b.id] || 0 : 0;
+    const finish = b ? upgradedLevel(start, b.level, b.max || 5) : 0;
+    gearSums[mask] =
+      gearSums[mask ^ bit] + (b ? (finish - (edition === 'bedrock' ? start : 0)) * b.cost : 0);
   }
   const better = (a, b) =>
     !b ||
@@ -81,7 +103,10 @@ export function optimize({
       for (const a of dp[left] || [])
         for (const b of dp[right] || []) {
           if (!a || !b) continue;
-          const cost = penalty(a.uses) + penalty(b.uses) + sums[right];
+          const cost =
+            penalty(a.uses) +
+            penalty(b.uses) +
+            (!bookOnly && left & 1 ? gearSums[right] : sums[right]);
           if (survival && cost >= 40) continue;
           const uses = Math.max(a.uses, b.uses) + 1;
           const total = a.total + b.total + cost,
@@ -127,6 +152,7 @@ export function optimize({
     peak: root.peak,
     finalPenalty: penalty(root.uses),
     books,
+    existing,
     item,
   };
 }

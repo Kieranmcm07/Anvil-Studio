@@ -49,6 +49,11 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Shares setups through links, including version, gear, enchantments and prior work.
 - Offers optional original Minecraft sounds and a celebration when every step is done.
 - Tracks finished steps with an XP-style bar and enchanting-table particles.
+- Lists the books to gather, with a separate “Got it” checklist.
+- Starts from existing item enchantments, including equal-level upgrades and edition-specific costs.
+- Compares two calculated builds side by side.
+- Offers an optional Resume button for the last plan and checked steps on this device.
+- Shows Minecraft-style item tooltips and downloads item cards as PNG images.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
 - Uses Minecraft item artwork, with separate mob scenes, fireflies, crystals, bubbles and embers.
 - Animates the heading and plan totals, with a switch to turn motion off.
@@ -107,13 +112,14 @@ Cloudflare does not need them in the published output.
 
 ## A few things to know
 
-Start with an **unenchanted item** and **one separate book per enchantment**,
+Start with your item and **one separate book per selected enchantment**,
 already at the level you select. Untouched items and books have a prior-work
 count of 0. If yours have been used on an anvil before, set their counts in
 **More options**.
 
-The plan does not include repairing durability, renaming items, existing item
-enchantments or making higher-level books from lower-level ones.
+Enter existing item enchantments under **Already on this item**. The plan does not
+include repairing durability, renaming items, or preparing higher-level books
+from duplicate lower-level books.
 
 **Wind Burst III:** combine four level-I books into two level-II books, then
 combine those. Make that book first. The calculator accounts for its prior work,
@@ -188,3 +194,17 @@ Minecraft names and artwork belong to their respective owners.
 
 Made by [Kieranmcm07](https://github.com/Kieranmcm07).
 If this saves you a few levels, a star would be appreciated.
+
+### Existing gear and saved progress
+
+Open **Already on this item** and enter the enchantments your gear has now. The
+main selection still represents the separate books you will add. For example,
+Unbreaking II on your item plus an Unbreaking II book produces Unbreaking III.
+Set the item's prior-work count in **More options** if it has been through an anvil.
+This does not model repairs, renaming or combining two pieces of gear.
+
+Calculated plans and checklist progress stay in this browser's local storage.
+A new visit starts empty; choose **Resume** to restore the last plan. **Forget**
+or **Reset** deletes it. Build A/B comparisons last for the current page session.
+Share links include existing enchantments but not your checked steps or supplies.
+Item cards describe the planned result until all steps are marked done.

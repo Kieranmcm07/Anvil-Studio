@@ -1131,6 +1131,148 @@ check(
 );
 window.history.replaceState(null, '', '/');
 
+// The optional tools work with the same planner inputs and never auto-start a new visit.
+click('#reset');
+change('[data-existing="unbreaking"]', '2');
+check($('#existing-count').textContent === '1', 'Existing gear has its own selection count');
+click('[data-enchant="unbreaking"][data-level="2"]');
+click('[data-enchant="mending"][data-level="1"]');
+click('#calculate');
+await tick();
+check(
+  $('#stat-total').dataset.value === '6',
+  'Existing Unbreaking II upgrades to III with the correct cost'
+);
+check(
+  document.querySelectorAll('[data-gather]').length === 2,
+  'Book checklist lists only the two new books'
+);
+const firstSupply = $('[data-gather]').dataset.gather;
+click('[data-gather="' + firstSupply + '"]');
+check(
+  $('#gather-count').textContent === '1 of 2 ready',
+  'Gathering books updates its own checklist'
+);
+check(
+  $('#step-progress').textContent === '0 of 2 done',
+  'Gathering books does not finish anvil steps'
+);
+click('[data-complete="1"]');
+const savedFeatureSession = localStorage.getItem('anvil-studio-session');
+check(
+  JSON.parse(savedFeatureSession).progress.completed.length === 1,
+  'Step progress is saved for explicit resume'
+);
+click('.check-step .slot .item-inspect');
+check(
+  !$('#item-tooltip').hidden && $('#item-tooltip').textContent.includes('Unbreaking II'),
+  'Tapping an item shows its existing enchantments'
+);
+document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+check($('#item-tooltip').hidden, 'Escape dismisses item tooltips');
+click('#flow-tab');
+const graphItem = $('#flow-svg [data-item-title]');
+graphItem.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true }));
+check(!$('#item-tooltip').hidden, 'Keyboard focus opens item tooltips in the full graph');
+check(
+  $('#compact-graph .compact-result .item-inspect'),
+  'Compact graph result offers its final enchantments'
+);
+click('#steps-tab');
+click('#capture-a');
+const buildALevels = $('#build-a').textContent;
+click('[data-enchant="protection"][data-level="4"]');
+check(
+  $('#capture-a').disabled && $('#build-a').textContent === buildALevels,
+  'Editing inputs preserves the captured comparison and disables stale capture'
+);
+check(
+  localStorage.getItem('anvil-studio-session') === savedFeatureSession,
+  'Uncalculated edits do not overwrite saved progress'
+);
+click('#calculate');
+await tick();
+click('#capture-b');
+check(
+  $('#compare-difference').textContent.includes('Build A uses'),
+  'Comparison explains which calculated build costs fewer levels'
+);
+click('[data-use-build="a"]');
+await tick();
+check(
+  $('#stat-total').dataset.value === '6' && $('#existing-count').textContent === '1',
+  'Use build restores its existing gear and recalculates'
+);
+click('#item-card');
+check(
+  $('#item-card-dialog').open && $('#item-card-preview').textContent.includes('Unbreaking III'),
+  'Item card previews the final upgraded enchantments'
+);
+check(
+  $('#item-card-preview').textContent.includes('Planned item'),
+  'Unfinished item cards do not claim completion'
+);
+click('#close-item-card');
+
+// Exercise drawing and download plumbing; the DOM harness does not render canvas pixels.
+const OriginalImage = window.Image;
+const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
+const originalToBlob = window.HTMLCanvasElement.prototype.toBlob;
+const drawCalls = [];
+window.Image = class {
+  naturalWidth = 16;
+  naturalHeight = 16;
+  set src(value) {
+    this.url = value;
+    queueMicrotask(() => this.onload());
+  }
+};
+window.HTMLCanvasElement.prototype.getContext = function () {
+  return {
+    fillRect() {},
+    strokeRect() {},
+    drawImage(...args) {
+      drawCalls.push(['image', ...args]);
+    },
+    fillText(text) {
+      drawCalls.push(['text', text]);
+    },
+  };
+};
+window.HTMLCanvasElement.prototype.toBlob = function (callback, type) {
+  callback(new Blob(['test'], { type }));
+};
+let downloadedCard = '';
+const trackDownload = (event) => {
+  const link = event.target.closest('a[download]');
+  if (link?.download.endsWith('.png')) {
+    event.preventDefault();
+    downloadedCard = link.download;
+  }
+};
+document.addEventListener('click', trackDownload, true);
+click('#item-card');
+click('#download-item-card');
+await tick();
+await tick();
+check(
+  downloadedCard === 'anvil-helmet.png' &&
+    drawCalls.some(([kind, text]) => kind === 'text' && text === 'Unbreaking III'),
+  'PNG download uses the final item enchantments'
+);
+check(!$('#download-item-card').disabled, 'PNG export restores its button after completion');
+window.Image = OriginalImage;
+window.HTMLCanvasElement.prototype.getContext = originalGetContext;
+window.HTMLCanvasElement.prototype.toBlob = originalToBlob;
+document.removeEventListener('click', trackDownload, true);
+click('#close-item-card');
+click('#reset');
+check(
+  localStorage.getItem('anvil-studio-session') === null && $('#compare-panel').hidden,
+  'Reset clears saved progress and build comparisons'
+);
+localStorage.setItem('anvil-studio-session', savedFeatureSession);
+
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
 change('#item', 'shield');
@@ -1162,5 +1304,14 @@ check(
   'Returning visit has no calculated cost or finished plan'
 );
 check(localStorage.getItem('anvil-studio-v1') === null, 'Startup clears obsolete saved loadouts');
+check(!$('#resume-banner').hidden, 'A returning visit offers Resume without restoring inputs');
+click('#resume-plan');
+await tick();
+check($('#step-progress').textContent === '1 of 2 done', 'Explicit Resume restores checked steps');
+check($('#gather-count').textContent === '1 of 2 ready', 'Explicit Resume restores gathered books');
+check(
+  $('#existing-count').textContent === '1',
+  'Explicit Resume restores existing item enchantments'
+);
 console.log(`${checks} DOM interaction checks passed. Visual layout was not tested.`);
 window.happyDOM.abort();

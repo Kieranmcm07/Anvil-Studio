@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./responsive.css" />
     <link rel="stylesheet" href="./scenery.css" />
     <link rel="stylesheet" href="./extras.css" />
+    <link rel="stylesheet" href="./planner-tools.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
@@ -457,6 +458,18 @@
               <span id="gear-summary">Choose your enchantments</span>
             </div>
           </div>
+          <details id="existing-panel" class="existing-panel">
+            <summary>Already on this item <span id="existing-count">0</span></summary>
+            <p>
+              Set the enchantments your gear already has. Then choose the books you want to add
+              below.
+            </p>
+            <div id="existing-enchantments"></div>
+            <p>
+              Used an anvil before? Set the item’s prior-work count in More options. Enchanting
+              tables don't add prior work.
+            </p>
+          </details>
           <div id="enchant-heading" class="enchant-heading">
             <h3 class="item-label">
               <img
@@ -533,6 +546,14 @@
               <h2 id="result-title">Your enchanting steps</h2>
             </div>
           </div>
+          <div id="resume-banner" class="resume-banner" hidden>
+            <div>
+              <strong>Pick up where you left off</strong>
+              <p id="resume-summary"></p>
+            </div>
+            <button id="resume-plan" type="button">Resume</button>
+            <button id="forget-plan" type="button" class="text-button">Forget</button>
+          </div>
           <div id="notice" class="notice" role="status" hidden></div>
           <p id="preparation-note" class="plan-preparation" hidden></p>
           <div id="stats" class="stats">
@@ -572,6 +593,23 @@
               <strong id="stat-steps">—</strong>
             </div>
           </div>
+          <details id="compare-panel" class="compare-panel" hidden>
+            <summary>Compare two builds</summary>
+            <p>Save this plan as A, change your enchantments and calculate again, then save B.</p>
+            <div class="compare-grid">
+              <section>
+                <h3>Build A</h3>
+                <button type="button" id="capture-a">Save current as A</button>
+                <div id="build-a"></div>
+              </section>
+              <section>
+                <h3>Build B</h3>
+                <button type="button" id="capture-b">Save current as B</button>
+                <div id="build-b"></div>
+              </section>
+            </div>
+            <p id="compare-difference" role="status"></p>
+          </details>
           <div class="blueprint panel" data-graph-mode="step">
             <div id="blueprint-toolbar" class="blueprint-toolbar">
               <div class="view-tabs" role="group" aria-label="Plan view">
@@ -595,6 +633,15 @@
                 </button>
               </div>
               <div class="plan-actions">
+                <button id="item-card" type="button" disabled>
+                  <img
+                    class="ui-item"
+                    src="./assets/items/diamond_sword.png"
+                    alt=""
+                    width="20"
+                    height="20"
+                  />Item card
+                </button>
                 <button id="share" class="text-button item-label" disabled>
                   <img
                     class="ui-item"
@@ -672,7 +719,7 @@
             <p id="peak-note">Each step must cost fewer than 40 levels.</p>
             <p id="penalty-note">Final work penalty: —</p>
             <p id="plan-footnote" class="plan-footnote">
-              Start with one unenchanted item and one separate book for each enchantment, already at
+              Start with your item and one separate book for each selected enchantment, already at
               the selected level.
             </p>
           </details>
@@ -689,6 +736,15 @@
         <button id="sources-button" class="text-button">Rules & sources ↗</button></span
       >
     </footer>
+    <dialog id="item-card-dialog" class="item-card-dialog" aria-labelledby="item-card-heading">
+      <div class="dialog-header">
+        <h2 id="item-card-heading">Your item card</h2>
+        <button id="close-item-card" type="button" aria-label="Close item card">×</button>
+      </div>
+      <div id="item-card-preview"></div>
+      <p id="item-card-status" role="status"></p>
+      <button id="download-item-card" type="button" class="primary-button">Download PNG</button>
+    </dialog>
     <dialog id="help">
       <div class="dialog-header">
         <span class="eyebrow">ANVIL STUDIO</span
@@ -706,7 +762,10 @@
           />
           <div>
             <h3>Choose your gear</h3>
-            <p>Pick your edition, version and item. Start with unenchanted gear.</p>
+            <p>
+              Pick your edition, version and item. If your gear has enchantments, enter them under
+              <strong>Already on this item</strong>.
+            </p>
           </div>
         </li>
         <li>
@@ -769,11 +828,13 @@
             alt=""
             width="20"
             height="20"
-          />Already used your item or books?
+          />Existing enchantments and prior work
         </summary>
         <p>
-          Open <strong>More options</strong> and set their prior-work counts. Use 0 for untouched
-          items. After a combine, the new count is the higher input count plus 1.
+          Set existing enchantments under <strong>Already on this item</strong>. Select the extra
+          books below; matching levels upgrade by one, up to the maximum. Then open
+          <strong>More options</strong> and set prior-work counts. Use 0 for untouched items. After
+          a combine, the new count is the higher input count plus 1.
         </p>
         <p>
           The cost includes both inputs’ work penalties, plus the enchantments on the right. A work
@@ -822,7 +883,8 @@
         </summary>
         <p>
           The planner handles up to 13 different books. It does not upgrade duplicate lower-level
-          books, repair durability, rename gear or import existing enchantments.
+          books, repair durability, rename gear or combine two pieces of equipment. Existing
+          enchantments can be entered manually.
         </p>
         <p>
           Edition and version control the available enchantments and conflicts. Historical
@@ -887,13 +949,17 @@
       </details>
       <p class="muted">
         Java 26.3 and Bedrock 26.3 are separate releases. No accounts or network connection are
-        needed after loading. Your theme is saved in this browser. The planner starts fresh on each
-        visit. Not affiliated with Mojang or Microsoft.
+        needed after loading. Your theme and last calculated plan are saved in this browser. Each
+        visit starts empty; use Resume to restore your plan and checked steps. Not affiliated with
+        Mojang or Microsoft.
       </p>
     </dialog>
     <dialog id="share-dialog" class="share-dialog" aria-labelledby="share-title">
       <h2 id="share-title">Share this setup</h2>
-      <p>Edition, version, gear and book levels are included.</p>
+      <p>
+        Edition, version, existing gear enchantments and book levels are included. Checked steps are
+        private to this device.
+      </p>
       <label for="share-url">Link</label>
       <textarea id="share-url" readonly rows="4" spellcheck="false"></textarea>
       <p id="share-feedback" role="status"></p>
