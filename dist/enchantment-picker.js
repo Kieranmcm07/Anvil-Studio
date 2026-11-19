@@ -73,9 +73,17 @@ export function renderExisting(enchantments, state, profile, raw) {
       const conflict =
         !state.incompatible &&
         Object.keys(state.existing || {}).some((id) => conflicts(id, e.id, profile, raw));
-      return `<label>${escape(e.name)}<select data-existing="${e.id}" aria-label="${escape(e.name)} already on item" ${conflict ? 'disabled' : ''}>
-      <option value="0">None</option>${Array.from({ length: e.max }, (_, i) => `<option value="${i + 1}" ${state.existing?.[e.id] === i + 1 ? 'selected' : ''}>${ROMAN[i + 1]}</option>`).join('')}
-    </select></label>`;
+      const selected = state.existing?.[e.id];
+      const buttons = Array.from({ length: e.max }, (_, i) => {
+        const level = i + 1;
+        return `<button type="button" data-existing="${e.id}" data-existing-level="${level}"
+          class="${selected === level ? 'selected' : ''}" aria-pressed="${selected === level}"
+          aria-label="${escape(e.name)} ${ROMAN[level]} already on item" ${conflict ? 'disabled' : ''}>${ROMAN[level]}</button>`;
+      }).join('');
+      return `<div class="enchant-row ${selected ? 'selected' : ''} ${conflict ? 'conflicted' : ''}">
+        <span class="enchant-name"><i class="selection-dot"></i>${escape(e.name)}</span>
+        <div class="level-buttons" role="group" aria-label="${escape(e.name)} already on item">${buttons}</div>
+      </div>`;
     })
     .join('');
 }

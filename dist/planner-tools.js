@@ -35,6 +35,18 @@ export async function drawItemCard(card) {
     sprite.onerror = () => reject(new Error('The item image could not load. Try again.'));
     sprite.src = card.icon;
   });
+  const fonts = window.getComputedStyle(document.documentElement);
+  const bodyFont =
+    fonts.getPropertyValue('--body').trim() ||
+    window.getComputedStyle(document.body).fontFamily ||
+    'Segoe UI, sans-serif';
+  const titleFont = fonts.getPropertyValue('--display').trim() || bodyFont;
+  if (document.fonts?.load) {
+    await Promise.all([
+      document.fonts.load('600 30px ' + titleFont),
+      document.fonts.load('24px ' + bodyFont),
+    ]).catch(() => {});
+  }
   const canvas = document.createElement('canvas');
   canvas.width = 864;
   canvas.height = 340 + card.enchantments.length * 38;
@@ -53,9 +65,9 @@ export async function drawItemCard(card) {
     height = sprite.naturalHeight * ratio;
   ctx.drawImage(sprite, 58 + (96 - width) / 2, 58 + (96 - height) / 2, width, height);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 30px monospace';
+  ctx.font = '600 30px ' + titleFont;
   ctx.fillText(card.title, 184, 92, 620);
-  ctx.font = '18px monospace';
+  ctx.font = '18px ' + bodyFont;
   ctx.fillStyle = '#c4a4e7';
   ctx.fillText(card.edition + ' ' + card.version, 184, 126, 620);
   ctx.fillStyle = '#bab0bf';
@@ -63,15 +75,15 @@ export async function drawItemCard(card) {
   let y = 238;
   for (const enchantment of card.enchantments) {
     ctx.fillStyle = enchantment.id.endsWith('_curse') ? '#ff6262' : '#c4a4e7';
-    ctx.font = '24px monospace';
+    ctx.font = '24px ' + bodyFont;
     ctx.fillText(enchantLabel(enchantment.id, enchantment.level), 58, y, 748);
     y += 38;
   }
-  ctx.font = '18px monospace';
+  ctx.font = '18px ' + bodyFont;
   ctx.fillStyle = '#a6df75';
   ctx.fillText(card.total + ' levels · ' + card.steps + ' anvil steps', 58, y + 20, 748);
   ctx.fillStyle = '#aaa0b0';
-  ctx.font = '16px monospace';
+  ctx.font = '16px ' + bodyFont;
   ctx.fillText('ANVIL STUDIO · anvil-studio.pages.dev', 58, canvas.height - 44, 748);
   return canvas;
 }

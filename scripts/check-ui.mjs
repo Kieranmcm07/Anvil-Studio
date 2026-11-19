@@ -762,7 +762,7 @@ click('#calculate');
 check($('#notice').textContent.includes('Select at least one'), 'Empty selection validation');
 $('#search').value = 'resp';
 $('#search').dispatchEvent(new window.Event('input', { bubbles: true }));
-check(document.querySelectorAll('.enchant-row').length === 1, 'Search filters enchantments');
+check(document.querySelectorAll('#enchantments .enchant-row').length === 1, 'Search filters enchantments');
 click('#reset');
 check(
   String($('#selection-count').textContent) === '0',
@@ -1133,7 +1133,26 @@ window.history.replaceState(null, '', '/');
 
 // The optional tools work with the same planner inputs and never auto-start a new visit.
 click('#reset');
-change('[data-existing="unbreaking"]', '2');
+click('[data-existing="unbreaking"][data-existing-level="2"]');
+check(
+  $('[data-existing="unbreaking"][data-existing-level="2"]').getAttribute('aria-pressed') ===
+    'true',
+  'Existing levels use selectable buttons'
+);
+click('[data-existing="unbreaking"][data-existing-level="2"]');
+check($('#existing-count').textContent === '0', 'Clicking the same existing level removes it');
+click('[data-existing="protection"][data-existing-level="4"]');
+check(
+  $('[data-existing="fire_protection"]').disabled,
+  'Existing level buttons still block conflicting enchantments'
+);
+click('[data-existing="protection"][data-existing-level="4"]');
+click('[data-existing="unbreaking"][data-existing-level="2"]');
+check(!$('#existing-enchantments select'), 'Existing gear no longer uses None dropdowns');
+check(
+  $('#item-card img').getAttribute('src').endsWith('/diamond_helmet.png'),
+  'Item card toolbar shows the selected helmet'
+);
 check($('#existing-count').textContent === '1', 'Existing gear has its own selection count');
 click('[data-enchant="unbreaking"][data-level="2"]');
 click('[data-enchant="mending"][data-level="1"]');
@@ -1219,6 +1238,7 @@ const OriginalImage = window.Image;
 const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
 const originalToBlob = window.HTMLCanvasElement.prototype.toBlob;
 const drawCalls = [];
+const cardFonts = [];
 window.Image = class {
   naturalWidth = 16;
   naturalHeight = 16;
@@ -1229,6 +1249,9 @@ window.Image = class {
 };
 window.HTMLCanvasElement.prototype.getContext = function () {
   return {
+    set font(value) {
+      cardFonts.push(value);
+    },
     fillRect() {},
     strokeRect() {},
     drawImage(...args) {
@@ -1261,6 +1284,10 @@ check(
   'PNG download uses the final item enchantments'
 );
 check(!$('#download-item-card').disabled, 'PNG export restores its button after completion');
+check(
+  cardFonts.length > 0 && cardFonts.every((font) => !font.includes('monospace')),
+  'Downloaded card uses site fonts instead of monospace'
+);
 window.Image = OriginalImage;
 window.HTMLCanvasElement.prototype.getContext = originalGetContext;
 window.HTMLCanvasElement.prototype.toBlob = originalToBlob;

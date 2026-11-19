@@ -1,4 +1,12 @@
-import { PROFILES, itemName, enchantsFor, itemsFor, conflicts, minimumBookUses } from './data.js';
+import {
+  PROFILES,
+  itemName,
+  itemIcon,
+  enchantsFor,
+  itemsFor,
+  conflicts,
+  minimumBookUses,
+} from './data.js';
 import { buildRequest, upgradedLevel } from './planner-model.js';
 import { saveSession, readSession, clearSession } from './session.js';
 import { setupPlannerTools, itemTooltip } from './planner-tools.js';
@@ -117,6 +125,7 @@ function renderControls() {
   $('#version-note').hidden = !note;
   if (note) reveal($('#version-note'));
   $('#gear-name').textContent = itemName(state.item);
+  $('#item-card img').src = itemIcon(state.item === 'book' ? 'enchanted_book' : state.item);
   $('#gear-icon').innerHTML = gearIcon(state.item);
   renderEnchantments();
 }
@@ -260,16 +269,19 @@ $('#item').addEventListener('change', (e) => {
   invalidate();
   renderControls();
 });
-$('#existing-enchantments').addEventListener('change', (event) => {
-  const id = event.target.dataset.existing;
-  if (!id) return;
-  const level = Number(event.target.value);
-  if (level) state.existing[id] = level;
-  else delete state.existing[id];
+$('#existing-enchantments').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-existing]');
+  if (!button || button.disabled) return;
+  const id = button.dataset.existing;
+  const level = Number(button.dataset.existingLevel);
+  if (state.existing[id] === level) delete state.existing[id];
+  else state.existing[id] = level;
   cleanSelections();
   invalidate();
   renderEnchantments();
-  document.querySelector('[data-existing="' + id + '"]')?.focus({ preventScroll: true });
+  document
+    .querySelector('[data-existing="' + id + '"][data-existing-level="' + level + '"]')
+    ?.focus({ preventScroll: true });
 });
 $('#enchantments').addEventListener('click', (e) => {
   const b = e.target.closest('[data-enchant]');

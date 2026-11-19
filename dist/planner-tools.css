@@ -31,20 +31,11 @@
   margin-left: 8px;
   font-size: 13px;
 }
-#existing-enchantments {
-  display: grid;
-  gap: 8px;
+#existing-enchantments .enchant-name {
+  flex: 1 1 120px;
 }
-#existing-enchantments label {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 82px;
-  gap: 10px;
-  align-items: center;
-  font-size: 14px;
-}
-#existing-enchantments select {
-  min-height: 44px;
-  width: 100%;
+#existing-enchantments .enchant-row:last-child {
+  border-bottom: 0;
 }
 .existing-hint {
   width: 100%;
@@ -228,7 +219,7 @@
   background: #100914;
   color: #c4a4e7;
   border: 2px solid #51258b;
-  font-family: ui-monospace, monospace;
+  font-family: var(--body);
 }
 .card-preview-heading {
   display: flex;
@@ -242,6 +233,7 @@
   image-rendering: pixelated;
 }
 .card-preview-heading h3 {
+  font-family: var(--display);
   color: white;
   margin: 0;
 }
