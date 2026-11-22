@@ -58,3 +58,8 @@ Java 26.3 assets from [mcmeta](https://github.com/misode/mcmeta/tree/26.3-assets
 They are served locally. Exact source URLs and SHA-256 hashes are in
 [effects/sources.json](effects/sources.json). The bar tracks completed anvil steps,
 not experience earned. These Minecraft textures remain owned by Mojang/Microsoft.
+
+The optional page-opening and enchanted-bookshelf sounds are original Mojang
+recordings from the same asset index. They play quietly when opening panels,
+saving comparisons and marking a book as gathered. Source URLs and hashes
+are included in sounds/sources.json.

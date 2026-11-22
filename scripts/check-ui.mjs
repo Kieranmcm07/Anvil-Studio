@@ -98,7 +98,7 @@ check($('#selection-count').textContent === '0', 'First visit starts with no enc
 check(workerStarts === 0, 'First visit does not start the optimizer');
 check(!$('.check-step') && !$('#flow-svg'), 'First visit has no generated steps or graph');
 check(
-  ['#stat-total', '#stat-peak', '#stat-steps'].every((id) => $(id).textContent === '\u2014'),
+  ['#stat-total', '#stat-peak', '#stat-steps'].every((id) => $(id).textContent === '-'),
   'First visit shows empty costs'
 );
 check($('#export').disabled && !$('#safety-badge'), 'First visit has no finished plan');
@@ -762,7 +762,10 @@ click('#calculate');
 check($('#notice').textContent.includes('Select at least one'), 'Empty selection validation');
 $('#search').value = 'resp';
 $('#search').dispatchEvent(new window.Event('input', { bubbles: true }));
-check(document.querySelectorAll('#enchantments .enchant-row').length === 1, 'Search filters enchantments');
+check(
+  document.querySelectorAll('#enchantments .enchant-row').length === 1,
+  'Search filters enchantments'
+);
 click('#reset');
 check(
   String($('#selection-count').textContent) === '0',
@@ -936,45 +939,28 @@ check(
 setStat(counter, 20);
 const staleFrame = [...frames.values()][0];
 clearStat(counter);
+check(
+  counter.textContent === '-' && !counter.dataset.value && frames.size === 0,
+  'Invalidated costs immediately become a hyphen without counting down'
+);
 staleFrame(2000);
-check(
-  !counter.dataset.value && counter.querySelector('.stat-value').textContent === '12',
-  'Clearing invalidates the result immediately but preserves its visible starting value'
-);
-advance(2000);
-advance(2450);
-check(
-  counter.querySelector('.stat-value').textContent === '6',
-  'Invalidated costs visibly count down before clearing'
-);
-const clearFrame = [...frames.values()][0];
+check(counter.textContent === '-', 'An old animation cannot overwrite the cleared value');
 clearStat(counter);
-check([...frames.values()][0] === clearFrame, 'Repeated edits do not restart the countdown');
-advance(2900);
-check(
-  counter.textContent === '\u2014' && frames.size === 0,
-  'Countdown finishes at the empty state'
-);
-setStat(counter, 40);
-finishCounters();
-clearStat(counter);
-advance(3000);
-advance(3450);
-const interruptedClear = [...frames.values()][0];
+check(counter.textContent === '-' && frames.size === 0, 'Repeated clears do not animate');
 setStat(counter, 25);
 check(
-  counter.querySelector('.stat-value').textContent === '20',
-  'A new result continues from the currently visible value'
+  counter.querySelector('.stat-value').textContent === '0',
+  'New results animate from zero after clearing'
 );
-interruptedClear(3900);
+staleFrame(3900);
 finishCounters();
 check(
   counter.querySelector('.stat-value').textContent === '25',
-  'An old clearing frame cannot erase a new result'
+  'A stale frame cannot erase a new result'
 );
 clearStat(counter);
 finishCounters();
-check(counter.textContent === '\u2014', 'Disabling motion finishes an empty-state countdown');
+check(counter.textContent === '-', 'Finishing animations preserves an empty hyphen');
 setStat(counter, 30);
 click('#theme-motion');
 check(
@@ -998,13 +984,10 @@ click('#preset');
 click('#calculate');
 await tick();
 finishCounters();
-const displayedTotal = $('#stat-total').querySelector('.stat-value').textContent;
 click('[data-enchant="mending"][data-level="1"]');
 check(
-  $('#stat-total').querySelector('.stat-value').textContent === displayedTotal &&
-    !$('#stat-total').dataset.value &&
-    $('#export').disabled,
-  'Editing a calculated plan starts a countdown and disables stale exports'
+  $('#stat-total').textContent === '-' && !$('#stat-total').dataset.value && $('#export').disabled,
+  'Editing a plan immediately clears its cost and disables stale exports'
 );
 check(
   $('#steps-view').textContent.includes('Update your plan') && !$('#flow-svg'),
@@ -1012,7 +995,10 @@ check(
 );
 advance(4000);
 advance(4900);
-check($('#stat-total').textContent === '\u2014', 'Selection edit completes its countdown');
+check(
+  $('#stat-total').textContent === '-',
+  'Selection edit keeps its hyphen after old animation frames'
+);
 click('#calculate');
 await tick();
 finishCounters();
@@ -1133,6 +1119,10 @@ window.history.replaceState(null, '', '/');
 
 // The optional tools work with the same planner inputs and never auto-start a new visit.
 click('#reset');
+click('#edit-existing');
+check($('#existing-dialog').open, 'Existing enchantments open in a separate editor');
+check(!$('#existing-panel [data-existing]'), 'The sidebar no longer duplicates every enchantment');
+
 click('[data-existing="unbreaking"][data-existing-level="2"]');
 check(
   $('[data-existing="unbreaking"][data-existing-level="2"]').getAttribute('aria-pressed') ===
@@ -1143,12 +1133,24 @@ click('[data-existing="unbreaking"][data-existing-level="2"]');
 check($('#existing-count').textContent === '0', 'Clicking the same existing level removes it');
 click('[data-existing="protection"][data-existing-level="4"]');
 check(
+  $('#existing-summary').textContent.includes('Protection IV') &&
+    !$('#enchantments [data-enchant="protection"]') &&
+    !$('#enchantments [data-enchant="fire_protection"]'),
+  'Existing max-level enchantments and their conflicts stay out of the books list'
+);
+check(
   $('[data-existing="fire_protection"]').disabled,
   'Existing level buttons still block conflicting enchantments'
 );
 click('[data-existing="protection"][data-existing-level="4"]');
 click('[data-existing="unbreaking"][data-existing-level="2"]');
 check(!$('#existing-enchantments select'), 'Existing gear no longer uses None dropdowns');
+click('#close-existing');
+check(
+  !$('#existing-dialog').open && $('#enchantment-label').textContent === 'Books to add',
+  'Closing the editor leaves a compact summary and the books list'
+);
+click('#sound-enabled');
 check(
   $('#item-card img').getAttribute('src').endsWith('/diamond_helmet.png'),
   'Item card toolbar shows the selected helmet'
@@ -1168,6 +1170,10 @@ check(
 );
 const firstSupply = $('[data-gather]').dataset.gather;
 click('[data-gather="' + firstSupply + '"]');
+check(
+  playedSounds.at(-1).endsWith('/book.ogg'),
+  'Gathering a book uses its quiet original Minecraft sound'
+);
 check(
   $('#gather-count').textContent === '1 of 2 ready',
   'Gathering books updates its own checklist'
@@ -1191,6 +1197,21 @@ document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubb
 check($('#item-tooltip').hidden, 'Escape dismisses item tooltips');
 click('#flow-tab');
 const graphItem = $('#flow-svg [data-item-title]');
+let graphSounds = playedSounds.length;
+click('#flow-svg [data-step="1"]');
+check(
+  playedSounds.length === graphSounds + 1 && playedSounds.at(-1).endsWith('/click.ogg'),
+  'A graph square plays exactly one click'
+);
+graphSounds = playedSounds.length;
+$('#flow-svg [data-step="2"]').dispatchEvent(
+  new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+);
+check(playedSounds.length === graphSounds + 1, 'Keyboard graph activation also plays one click');
+graphSounds = playedSounds.length;
+click('#flow-tab');
+check(playedSounds.length === graphSounds, 'The active graph tab stays quiet');
+
 graphItem.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true }));
 check(!$('#item-tooltip').hidden, 'Keyboard focus opens item tooltips in the full graph');
 check(
@@ -1198,6 +1219,13 @@ check(
   'Compact graph result offers its final enchantments'
 );
 click('#steps-tab');
+check(playedSounds.at(-1).endsWith('/page.ogg'), 'Switching views uses the quiet book-page sound');
+$('#compare-panel').open = true;
+$('#compare-panel').dispatchEvent(new window.Event('toggle'));
+check(
+  $('#build-a').textContent.includes('Unbreaking III'),
+  'Opening comparison captures the starting plan'
+);
 click('#capture-a');
 const buildALevels = $('#build-a').textContent;
 click('[data-enchant="protection"][data-level="4"]');
@@ -1211,7 +1239,13 @@ check(
 );
 click('#calculate');
 await tick();
+check(
+  $('#build-b').textContent.includes('Protection IV') &&
+    $('#compare-changes').textContent.includes('Protection'),
+  'A new calculation fills build B and highlights changed enchantments'
+);
 click('#capture-b');
+const savedBuildB = $('#build-b').textContent;
 check(
   $('#compare-difference').textContent.includes('Build A uses'),
   'Comparison explains which calculated build costs fewer levels'
@@ -1222,6 +1256,7 @@ check(
   $('#stat-total').dataset.value === '6' && $('#existing-count').textContent === '1',
   'Use build restores its existing gear and recalculates'
 );
+check($('#build-b').textContent === savedBuildB, 'Loading build A preserves saved build B');
 click('#item-card');
 check(
   $('#item-card-dialog').open && $('#item-card-preview').textContent.includes('Unbreaking III'),
@@ -1231,6 +1266,22 @@ check(
   $('#item-card-preview').textContent.includes('Planned item'),
   'Unfinished item cards do not claim completion'
 );
+for (const [theme, mob] of Object.entries({
+  forest: 'fox',
+  amethyst: 'shulker',
+  ocean: 'dolphin',
+  ember: 'blaze',
+  overworld: 'creeper',
+})) {
+  click('[data-theme-choice="' + theme + '"]');
+  check(
+    $('#item-card-preview .card-mob')
+      .getAttribute('src')
+      .endsWith('/' + mob + '.png') && $('#item-card-preview .scene-' + theme + '.is-active'),
+    'Open item card follows the ' + theme + ' theme and its mob'
+  );
+}
+click('[data-theme-choice="forest"]');
 click('#close-item-card');
 
 // Exercise drawing and download plumbing; the DOM harness does not render canvas pixels.
@@ -1239,6 +1290,7 @@ const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
 const originalToBlob = window.HTMLCanvasElement.prototype.toBlob;
 const drawCalls = [];
 const cardFonts = [];
+const cardColors = [];
 window.Image = class {
   naturalWidth = 16;
   naturalHeight = 16;
@@ -1251,6 +1303,9 @@ window.HTMLCanvasElement.prototype.getContext = function () {
   return {
     set font(value) {
       cardFonts.push(value);
+    },
+    set fillStyle(value) {
+      cardColors.push(value);
     },
     fillRect() {},
     strokeRect() {},
@@ -1285,6 +1340,15 @@ check(
 );
 check(!$('#download-item-card').disabled, 'PNG export restores its button after completion');
 check(
+  drawCalls.some(([kind, image]) => kind === 'image' && image.url?.endsWith('/fox.png')) &&
+    drawCalls.some(
+      ([kind, image]) => kind === 'image' && image.url?.startsWith('data:image/svg+xml')
+    ) &&
+    !cardColors.includes('#100914'),
+  'PNG includes theme scenery and the original mob, without fixed purple'
+);
+
+check(
   cardFonts.length > 0 && cardFonts.every((font) => !font.includes('monospace')),
   'Downloaded card uses site fonts instead of monospace'
 );
@@ -1298,6 +1362,40 @@ check(
   localStorage.getItem('anvil-studio-session') === null && $('#compare-panel').hidden,
   'Reset clears saved progress and build comparisons'
 );
+change('#item', 'shovel');
+click('#preset');
+click('#calculate');
+await tick();
+$('#compare-panel').open = true;
+$('#compare-panel').dispatchEvent(new window.Event('toggle'));
+check(
+  $('#compare-shortcuts').textContent.includes('Fortune instead of Silk Touch'),
+  'Comparison offers a suitable alternative'
+);
+click('[data-compare-alternative="0"]');
+await tick();
+check(
+  $('#build-a').textContent.includes('Silk Touch') &&
+    $('#build-b').textContent.includes('Fortune') &&
+    $('#compare-changes').textContent.includes('Silk Touch'),
+  'Trying an alternative keeps A and calculates B with its changes'
+);
+click('[data-clear-build="b"]');
+check(
+  !$('#build-b [data-use-build]') && !$('#compare-difference').textContent,
+  'Clearing a comparison also clears its difference'
+);
+click('#reset');
+click('#edit-existing');
+click('[data-existing="protection"][data-existing-level="4"]');
+click('#close-existing');
+click('[data-remove-existing="protection"]');
+check(
+  $('#existing-count').textContent === '0' && $('#enchantments [data-enchant="protection"]'),
+  'Removing an existing enchantment restores its book choices'
+);
+click('#reset');
+click('#sound-enabled');
 localStorage.setItem('anvil-studio-session', savedFeatureSession);
 
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
@@ -1327,7 +1425,7 @@ check(
 check(workerStarts === startsBeforeReload, 'Returning visit does not start the optimizer');
 check(!$('.check-step') && !$('#flow-svg'), 'Returning visit waits to generate steps and graph');
 check(
-  $('#stat-total').textContent === '\u2014' && $('#export').disabled && !$('#safety-badge'),
+  $('#stat-total').textContent === '-' && $('#export').disabled && !$('#safety-badge'),
   'Returning visit has no calculated cost or finished plan'
 );
 check(localStorage.getItem('anvil-studio-v1') === null, 'Startup clears obsolete saved loadouts');

@@ -42,28 +42,11 @@ function tween(element, from, value, draw, finish = () => {}) {
   counter.frame = window.requestAnimationFrame(update);
 }
 
-export function clearStat(element, { immediate = false } = {}) {
-  if (element.classList.contains('is-clearing') && !immediate) return;
-  const number = element.querySelector('.stat-value');
-  const from = Number(number?.textContent) || 0;
+export function clearStat(element) {
   stop(element);
   delete element.dataset.value;
-  const finish = () => {
-    element.classList.remove('is-clearing');
-    element.textContent = '—';
-  };
-  if (!number || immediate) return finish();
-  element.classList.add('is-clearing');
-  element.querySelector('.sr-only').textContent = 'Not calculated';
-  tween(
-    element,
-    from,
-    0,
-    (value) => {
-      number.textContent = String(value);
-    },
-    finish
-  );
+  element.classList.remove('is-clearing');
+  element.textContent = '-';
 }
 
 export function setStat(element, value, unit = '') {

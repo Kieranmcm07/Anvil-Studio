@@ -51,9 +51,9 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Tracks finished steps with an XP-style bar and enchanting-table particles.
 - Lists the books to gather, with a separate “Got it” checklist.
 - Starts from existing item enchantments, including equal-level upgrades and edition-specific costs.
-- Compares two calculated builds side by side.
+- Compares two builds, highlights changed enchantments and offers alternatives such as Silk Touch or Fortune.
 - Offers an optional Resume button for the last plan and checked steps on this device.
-- Shows Minecraft-style item tooltips and downloads item cards as PNG images.
+- Shows themed item tooltips and downloads item cards with your theme, its mob and scenery.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
 - Uses Minecraft item artwork, with separate mob scenes, fireflies, crystals, bubbles and embers.
 - Animates the heading and plan totals, with a switch to turn motion off.
@@ -117,7 +117,9 @@ already at the level you select. Untouched items and books have a prior-work
 count of 0. If yours have been used on an anvil before, set their counts in
 **More options**.
 
-Enter existing item enchantments under **Already on this item**. The plan does not
+Use **Add** or **Edit** under **Already on this item** to set existing enchantments.
+They appear as removable labels, leaving the main list for books you can still add.
+The plan does not
 include repairing durability, renaming items, or preparing higher-level books
 from duplicate lower-level books.
 

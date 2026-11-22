@@ -5,7 +5,7 @@ import { optimize, penalty, xpForLevel } from '../dist/optimizer.js';
 import { buildRequest, nodeEnchantments, planSignature, bookKey } from '../dist/planner-model.js';
 import { createShareUrl, readSharedPlan } from '../dist/share.js';
 import { saveSession, readSession, clearSession } from '../dist/session.js';
-import { cardDetails } from '../dist/planner-tools.js';
+import { cardDetails, comparisonAlternatives, comparisonRows } from '../dist/planner-tools.js';
 import { PROFILES } from '../dist/data.js';
 
 const raw = JSON.parse(
@@ -235,4 +235,34 @@ test('item-card data includes final upgraded enchantments and honest completion 
   assert.equal(cardDetails(result, settings, [1]).status, 'Finished item');
   result.theoretical = true;
   assert.match(cardDetails(result, settings, [1]).status, /Theoretical/);
+});
+
+test('comparison alternatives respect existing gear and preserve the original setup', () => {
+  const settings = state({ item: 'shovel', selected: { silk_touch: b(1), mending: b(1) } });
+  settings.profile = PROFILES.find((p) => p.id === settings.version);
+  const before = structuredClone(settings);
+  const options = comparisonAlternatives(settings, raw);
+  assert.equal(options.length, 1);
+  assert.match(options[0].label, /Fortune instead of Silk Touch/);
+  assert.deepEqual(options[0].settings.selected, { mending: b(1), fortune: b(3) });
+  assert.deepEqual(settings, before);
+  settings.existing = { silk_touch: 1 };
+  assert.equal(comparisonAlternatives(settings, raw).length, 0);
+});
+
+test('comparison differences include additions, removals and upgraded levels', () => {
+  const a = state({ existing: { protection: 3 }, selected: { mending: b(1) } });
+  const bState = state({
+    existing: { protection: 3 },
+    selected: { protection: b(3), unbreaking: b(3) },
+  });
+  const rows = comparisonRows(
+    { settings: a, result: optimize(buildRequest(a, raw)) },
+    { settings: bState, result: optimize(buildRequest(bState, raw)) }
+  );
+  assert.deepEqual(rows, [
+    { id: 'mending', a: 1, b: 0, changed: true },
+    { id: 'protection', a: 3, b: 4, changed: true },
+    { id: 'unbreaking', a: 0, b: 3, changed: true },
+  ]);
 });

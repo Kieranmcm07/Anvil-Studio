@@ -175,12 +175,12 @@
   width: max-content;
   max-width: min(340px, calc(100vw - 16px));
   padding: 12px 15px;
-  color: #c4a4e7;
-  background: #100914f5;
-  border: 2px solid #51258b;
+  color: var(--accent);
+  background: var(--surface);
+  border: 2px solid var(--accent-border);
   box-shadow:
-    0 0 0 2px #09050e,
-    inset 0 0 0 1px #210c3a;
+    0 0 0 2px var(--panel),
+    inset 0 0 0 1px var(--border);
   font-family: ui-monospace, monospace;
   font-size: 14px;
   line-height: 1.65;
@@ -192,12 +192,13 @@
   display: block;
 }
 .minecraft-tooltip strong {
-  color: #fff;
+  color: var(--text);
   margin-bottom: 4px;
 }
 .curse {
   color: #ff7777;
 }
+.existing-dialog,
 .item-card-dialog {
   width: min(570px, calc(100vw - 24px));
   max-height: 90dvh;
@@ -208,6 +209,7 @@
   color: var(--text);
   background: var(--panel);
 }
+.existing-dialog::backdrop,
 .item-card-dialog::backdrop {
   background: #000a;
 }
@@ -216,9 +218,13 @@
 }
 #item-card-preview {
   padding: 22px;
-  background: #100914;
-  color: #c4a4e7;
-  border: 2px solid #51258b;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--accent-border);
   font-family: var(--body);
 }
 .card-preview-heading {
@@ -234,7 +240,7 @@
 }
 .card-preview-heading h3 {
   font-family: var(--display);
-  color: white;
+  color: var(--text);
   margin: 0;
 }
 .card-preview-heading p {
@@ -266,6 +272,7 @@
     width: 24px;
     height: 24px;
   }
+  .existing-dialog,
   .item-card-dialog {
     padding: 16px;
   }
@@ -279,6 +286,7 @@
   .compare-panel,
   .minecraft-tooltip,
   .item-card-dialog,
+  .existing-dialog,
   #item-card {
     display: none;
   }
@@ -294,4 +302,261 @@
 #flow-svg [data-item-title]:focus-visible .node-bg {
   stroke: var(--accent);
   stroke-width: 2;
+}
+
+/* Keep the setup short; the full list lives in the existing-gear editor. */
+.existing-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.existing-heading strong {
+  font-size: 14px;
+}
+.existing-heading button {
+  min-height: 44px;
+  padding: 8px 10px;
+  color: var(--accent);
+}
+#existing-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#existing-summary p {
+  margin: 0;
+  font-size: 12px;
+}
+.existing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+}
+.existing-chip span {
+  color: var(--muted);
+  font-size: 18px;
+}
+.existing-chip:hover {
+  border-color: var(--accent);
+}
+.existing-dialog p {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.existing-dialog h2 {
+  font-size: 21px;
+}
+.existing-dialog .dialog-header {
+  gap: 16px;
+}
+#close-existing {
+  min-height: 44px;
+  color: var(--accent);
+  font: inherit;
+}
+#existing-enchantments .level-buttons button {
+  min-width: 34px;
+  min-height: 40px;
+}
+#existing-enchantments .enchant-row {
+  flex-wrap: wrap;
+}
+
+/* The card shares the scene assets and palette used by the page. */
+#item-card-preview > :not(.card-scenery) {
+  position: relative;
+  z-index: 1;
+}
+.card-scenery {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.card-scenery .scene-landscape {
+  height: 150px;
+}
+.card-mob {
+  position: absolute;
+  width: 30%;
+  height: 160px;
+  right: 16px;
+  bottom: 68px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  opacity: 0.23;
+  animation: card-mob-float 7s ease-in-out infinite alternate;
+}
+.card-mob + .card-mob {
+  width: 22%;
+  right: 12px;
+  bottom: 230px;
+  opacity: 0.16;
+  animation-delay: -3s;
+}
+#item-card-preview ul {
+  padding-right: 22%;
+}
+#item-card-preview p {
+  color: var(--muted);
+}
+#item-card-preview > p:last-child {
+  color: var(--accent);
+}
+@keyframes card-mob-float {
+  from {
+    transform: translateY(3px);
+  }
+  to {
+    transform: translateY(-5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-scenery * {
+    animation: none !important;
+  }
+}
+html[data-motion='off'] .card-scenery * {
+  animation: none !important;
+}
+
+/* Compare the result first, with the detailed enchantment lists tucked away. */
+.compare-grid > section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--surface);
+}
+.compare-grid h3 {
+  margin: 0 0 12px;
+}
+.compare-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.compare-item > img,
+.compare-empty > img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.compare-item small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+  text-transform: capitalize;
+}
+.compare-cost {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 8px;
+}
+.compare-cost > strong {
+  color: var(--accent);
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+.compare-cost > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.compare-cost .compare-saving {
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+.compare-grid dt {
+  color: var(--muted);
+}
+.compare-grid dd {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.compare-actions,
+.compare-alternatives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.compare-actions button:first-child {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+.compare-empty {
+  min-height: 150px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.compare-empty p {
+  max-width: 260px;
+}
+.compare-panel .compare-warning {
+  color: var(--warning-text);
+}
+.compare-enchantments {
+  margin-top: 14px;
+}
+#compare-difference:empty,
+#compare-changes:empty,
+#compare-shortcuts:empty {
+  display: none;
+}
+#compare-difference {
+  font-weight: 600;
+}
+#compare-changes table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+#compare-changes th,
+#compare-changes td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+#compare-changes th:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+#compare-changes td {
+  color: var(--accent);
+}
+#compare-shortcuts {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 600px) {
+  .existing-chip {
+    min-height: 44px;
+  }
+  .compare-grid > section {
+    padding: 14px;
+  }
+  #item-card-preview ul {
+    padding-right: 0;
+  }
+  .card-mob {
+    opacity: 0.14;
+  }
 }

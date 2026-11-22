@@ -3,14 +3,14 @@ import { finishCounters } from './stats.js';
 
 const STORAGE_KEY = 'anvil-studio-appearance';
 export const THEMES = ['forest', 'amethyst', 'ocean', 'ember', 'overworld'];
-const themeMobs = {
+export const themeMobs = {
   forest: ['fox'],
   amethyst: ['shulker'],
   ocean: ['dolphin'],
   ember: ['blaze'],
   overworld: ['creeper', 'bee', 'enderman', 'zombie', 'axolotl', 'skeleton'],
 };
-const backgrounds = {
+export const backgrounds = {
   forest: '#101413',
   amethyst: '#16121e',
   ocean: '#0e1720',
@@ -52,6 +52,7 @@ export function setupThemes() {
       if (visible && !image.getAttribute('src')) image.src = image.dataset.mobSrc;
       image.classList.toggle('is-visible', visible);
     });
+    document.dispatchEvent(new window.CustomEvent('themechange'));
   }
   function applyMotion() {
     const enabled = appearance.motion && !reducedMotion.matches;

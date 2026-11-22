@@ -1,6 +1,6 @@
 import { conflicts, minimumBookUses, nameOf, ROMAN } from './data.js';
 import { upgradedLevel } from './planner-model.js';
-import { $, escape } from './ui.js';
+import { $, escape, enchantLabel } from './ui.js';
 import { updateCount } from './stats.js';
 
 function levelButton(enchantment, level, selectedLevel, reason, initial = 0) {
@@ -66,7 +66,19 @@ function enchantmentRow(enchantment, state, profile, raw) {
 
 export function renderExisting(enchantments, state, profile, raw) {
   $('#existing-panel').hidden = state.item === 'book';
-  $('#existing-count').textContent = String(Object.keys(state.existing || {}).length);
+  const owned = Object.entries(state.existing || {});
+  $('#existing-count').textContent = String(owned.length);
+  $('#existing-count').hidden = !owned.length;
+  $('#edit-existing').textContent = owned.length ? 'Edit' : 'Add';
+  $('#existing-summary').innerHTML = owned.length
+    ? owned
+        .map(
+          ([id, level]) =>
+            `<button type="button" class="existing-chip" data-remove-existing="${id}" aria-label="Remove existing ${escape(enchantLabel(id, level))}">${escape(enchantLabel(id, level))}<span aria-hidden="true">×</span></button>`
+        )
+        .join('')
+    : '<p>Starting with enchanted gear? Add its enchantments here.</p>';
+  $('#enchantment-label').textContent = owned.length ? 'Books to add' : 'Enchantments';
   $('#existing-enchantments').innerHTML = enchantments
     .filter((e) => !e.id.endsWith('_curse') || state.showCurses || state.existing?.[e.id])
     .map((e) => {
@@ -100,6 +112,11 @@ export function renderPicker(enchantments, state, profile, raw) {
   const visible = enchantments.filter(
     (enchantment) =>
       enchantment.name.toLowerCase().includes(search) &&
+      (state.existing?.[enchantment.id] || 0) < enchantment.max &&
+      (state.incompatible ||
+        !Object.keys(state.existing || {}).some((id) =>
+          conflicts(id, enchantment.id, profile, raw)
+        )) &&
       (!enchantment.id.endsWith('_curse') ||
         state.showCurses ||
         state.selected[enchantment.id] ||

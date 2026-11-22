@@ -1,7 +1,7 @@
 import { nudgeNumber } from './motion.js';
 
 const STORAGE_KEY = 'anvil-studio-sound';
-const volumes = { click: 0.18, step: 0.12, enchant: 0.2, levelup: 0.18 };
+const volumes = { click: 0.18, step: 0.12, enchant: 0.2, levelup: 0.18, page: 0.12, book: 0.12 };
 let enabled = false;
 let current = null;
 
@@ -23,12 +23,12 @@ export function setupSounds() {
   document
     .querySelectorAll(numberSelector)
     .forEach((input) => numberValues.set(input, input.value));
-  function controlClick(control) {
+  function controlClick(control, sound = 'click') {
     // Focus and click can describe the same text-field activation.
     const now = Date.now();
     if (now - (controlTimes.get(control) ?? -Infinity) < 90) return;
     controlTimes.set(control, now);
-    playSound('click');
+    playSound(sound);
   }
   try {
     enabled = localStorage.getItem(STORAGE_KEY) === 'true';
@@ -49,7 +49,7 @@ export function setupSounds() {
     'click',
     (event) => {
       const control = event.target.closest(
-        'button, summary, a[href], input[type="search"], input[type="text"], textarea'
+        'button, summary, a[href], input[type="search"], input[type="text"], textarea, #flow-svg [data-step], #flow-svg [data-item-title]'
       );
       if (
         !control ||
@@ -58,7 +58,19 @@ export function setupSounds() {
         control.hasAttribute('data-complete')
       )
         return;
-      controlClick(control);
+      if (
+        control.matches('#steps-tab, #flow-tab') &&
+        control.getAttribute('aria-pressed') === 'true'
+      )
+        return;
+      const sound = control.matches(
+        '#steps-tab, #flow-tab, #help-button, #edit-existing, #item-card'
+      )
+        ? 'page'
+        : control.matches('#capture-a, #capture-b')
+          ? 'book'
+          : 'click';
+      controlClick(control, sound);
     },
     true
   );
@@ -71,7 +83,7 @@ export function setupSounds() {
     const input = event.target;
     if (input.disabled || input.id === 'sound-enabled') return;
     if (input.matches('input[type="checkbox"]') && (!input.dataset.complete || !input.checked))
-      playSound('click');
+      playSound(input.hasAttribute('data-gather') && input.checked ? 'book' : 'click');
   });
   function numberFeedback(event) {
     const input = event.target;

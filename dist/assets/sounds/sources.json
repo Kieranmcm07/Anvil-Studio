@@ -18,5 +18,15 @@
     "url": "https://resources.download.minecraft.net/f0/f05f55328f2b98b3c7d881fcdef7e7964d8082fa",
     "sha1": "f05f55328f2b98b3c7d881fcdef7e7964d8082fa",
     "original": "minecraft/sounds/block/enchantment_table/enchant1.ogg"
+  },
+  "page": {
+    "url": "https://resources.download.minecraft.net/23/234d6a686516c264a370ea834b87d47ae7334ef7",
+    "sha1": "234d6a686516c264a370ea834b87d47ae7334ef7",
+    "original": "minecraft/sounds/item/book/open_flip1.ogg"
+  },
+  "book": {
+    "url": "https://resources.download.minecraft.net/21/2106f2509f5c64a2e7d26990295d6162a8f6026a",
+    "sha1": "2106f2509f5c64a2e7d26990295d6162a8f6026a",
+    "original": "minecraft/sounds/block/chiseled_bookshelf/insert_enchanted1.ogg"
   }
 }

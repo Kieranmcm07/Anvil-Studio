@@ -458,18 +458,13 @@
               <span id="gear-summary">Choose your enchantments</span>
             </div>
           </div>
-          <details id="existing-panel" class="existing-panel">
-            <summary>Already on this item <span id="existing-count">0</span></summary>
-            <p>
-              Tap the levels already on your gear. Tap a selected level again to remove it. Choose
-              any books to add in the list below.
-            </p>
-            <div id="existing-enchantments"></div>
-            <p>
-              Used an anvil before? Set the item’s prior-work count in More options. Enchanting
-              tables don't add prior work.
-            </p>
-          </details>
+          <section id="existing-panel" class="existing-panel">
+            <div class="existing-heading">
+              <strong>Already on this item <span id="existing-count">0</span></strong>
+              <button id="edit-existing" type="button" class="text-button">Add</button>
+            </div>
+            <div id="existing-summary"></div>
+          </section>
           <div id="enchant-heading" class="enchant-heading">
             <h3 class="item-label">
               <img
@@ -479,7 +474,7 @@
                 width="20"
                 height="20"
               />
-              Enchantments <span id="selection-count">0</span>
+              <span id="enchantment-label">Enchantments</span> <span id="selection-count">0</span>
             </h3>
             <button id="preset" class="text-button mint">Recommended</button>
           </div>
@@ -567,7 +562,7 @@
                   height="20"
                 />Plan cost</span
               >
-              <strong id="stat-total">—</strong>
+              <strong id="stat-total">-</strong>
             </div>
             <div>
               <span class="item-label"
@@ -578,7 +573,7 @@
                   width="20"
                   height="20"
                 />Highest step</span
-              ><strong id="stat-peak">—</strong>
+              ><strong id="stat-peak">-</strong>
             </div>
             <div>
               <span class="item-label"
@@ -590,12 +585,15 @@
                   height="20"
                 />Steps</span
               >
-              <strong id="stat-steps">—</strong>
+              <strong id="stat-steps">-</strong>
             </div>
           </div>
           <details id="compare-panel" class="compare-panel" hidden>
             <summary>Compare two builds</summary>
-            <p>Save this plan as A, change your enchantments and calculate again, then save B.</p>
+            <p>
+              Keep a starting plan in A. Try an alternative or change your books and calculate again
+              to see B.
+            </p>
             <div class="compare-grid">
               <section>
                 <h3>Build A</h3>
@@ -609,6 +607,8 @@
               </section>
             </div>
             <p id="compare-difference" role="status"></p>
+            <div id="compare-changes"></div>
+            <div id="compare-shortcuts"></div>
           </details>
           <div class="blueprint panel" data-graph-mode="step">
             <div id="blueprint-toolbar" class="blueprint-toolbar">
@@ -736,6 +736,18 @@
         <button id="sources-button" class="text-button">Rules & sources ↗</button></span
       >
     </footer>
+    <dialog id="existing-dialog" class="existing-dialog" aria-labelledby="existing-title">
+      <div class="dialog-header">
+        <h2 id="existing-title">What’s already on your item?</h2>
+        <button id="close-existing" type="button">Done</button>
+      </div>
+      <p>Choose the levels already on your gear. Tap a selected level again to remove it.</p>
+      <div id="existing-enchantments"></div>
+      <p class="muted">
+        If you have used an anvil before, set the item’s prior-work count in More options.
+        Enchanting tables don’t add prior work.
+      </p>
+    </dialog>
     <dialog id="item-card-dialog" class="item-card-dialog" aria-labelledby="item-card-heading">
       <div class="dialog-header">
         <h2 id="item-card-heading">Your item card</h2>

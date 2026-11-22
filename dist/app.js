@@ -269,6 +269,19 @@ $('#item').addEventListener('change', (e) => {
   invalidate();
   renderControls();
 });
+$('#edit-existing').addEventListener('click', () => {
+  $('#existing-dialog').showModal();
+  reveal($('#existing-dialog'));
+});
+$('#close-existing').addEventListener('click', () => $('#existing-dialog').close());
+$('#existing-summary').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-remove-existing]');
+  if (!button) return;
+  delete state.existing[button.dataset.removeExisting];
+  invalidate();
+  renderEnchantments();
+  $('#edit-existing').focus({ preventScroll: true });
+});
 $('#existing-enchantments').addEventListener('click', (event) => {
   const button = event.target.closest('[data-existing]');
   if (!button || button.disabled) return;
@@ -396,7 +409,7 @@ function loadBuild(settings) {
   renderControls();
   calculate();
 }
-const toolsUI = setupPlannerTools(loadBuild);
+const toolsUI = setupPlannerTools(loadBuild, () => raw);
 for (const eventName of ['planchange', 'planprogress']) {
   document.addEventListener(eventName, (event) => {
     if (event.detail) saveSession(event.detail.settings, event.detail.progress);
