@@ -14,4 +14,8 @@ export function setupGithubLinks() {
   const repository = document.querySelector('#repository-link');
   repository.hidden = !site.repositoryUrl;
   if (site.repositoryUrl) repository.href = site.repositoryUrl;
+
+  const report = document.querySelector('#report-bug-link');
+  document.querySelector('#report-bug').hidden = !site.repositoryUrl;
+  if (site.repositoryUrl) report.href = site.repositoryUrl.replace(/\/$/, '') + '/issues/new';
 }
