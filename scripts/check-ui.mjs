@@ -1547,6 +1547,115 @@ gearCounter.animate = realGearAnimate;
 click('#reset');
 localStorage.setItem('anvil-studio-session', savedFeatureSession);
 
+// Regressions: changing setup must not retain focus targets, old gear or pending share UI.
+click('#reset');
+const focusedChoice = $('[data-enchant="unbreaking"][data-level="3"]');
+focusedChoice.focus();
+focusedChoice.click();
+check(
+  document.activeElement === $('[data-enchant="unbreaking"][data-level="3"]'),
+  'Selecting an enchantment preserves keyboard focus after rebuilding its row'
+);
+click('[data-enchant="unbreaking"][data-level="3"]');
+check(
+  document.activeElement === $('[data-enchant="unbreaking"][data-level="3"]'),
+  'Removing an enchantment also preserves keyboard focus'
+);
+click('[data-enchant="protection"][data-level="4"]');
+const beforeDisabled = $('#selection-count').textContent;
+$('[data-enchant="fire_protection"][data-level="4"]').dispatchEvent(
+  new window.MouseEvent('click', { bubbles: true })
+);
+check(
+  $('#selection-count').textContent === beforeDisabled,
+  'Disabled enchantments ignore delegated activation'
+);
+
+click('#reset');
+change('#item', 'brush');
+click('[data-existing="unbreaking"][data-existing-level="3"]');
+click('[data-enchant="mending"][data-level="1"]');
+change('#item-uses', '2');
+change('#version', 'java-1.11.1');
+check(
+  $('#item').value === 'helmet' &&
+    $('#existing-count').textContent === '0' &&
+    $('#selection-count').textContent === '0' &&
+    $('#item-uses').value === '0',
+  'An unavailable item falls back to clean gear without carrying over enchantments or prior work'
+);
+click('[data-existing="unbreaking"][data-existing-level="3"]');
+click('[data-enchant="mending"][data-level="1"]');
+change('#item-uses', '2');
+change('#version', 'java-26.3');
+check(
+  $('#existing-count').textContent === '1' &&
+    $('#selection-count').textContent === '1' &&
+    $('#item-uses').value === '2',
+  'Version changes retain compatible inputs when the item stays the same'
+);
+
+click('#reset');
+click('#preset');
+let rejectLateCopy;
+let pendingCopyCalls = 0;
+clipboard.writeText = () => {
+  pendingCopyCalls++;
+  return new Promise((resolve, reject) => {
+    rejectLateCopy = reject;
+  });
+};
+click('#share');
+click('#share');
+check(pendingCopyCalls === 1, 'Repeated Share clicks cannot start duplicate permission requests');
+click('#reset');
+rejectLateCopy(new Error('Clipboard denied'));
+await tick();
+check(
+  !$('#share-dialog').open && !$('#notice').textContent,
+  'A clipboard failure after Reset cannot reopen an old sharing popup'
+);
+click('#preset');
+let resolveLateCopy;
+clipboard.writeText = () =>
+  new Promise((resolve) => {
+    resolveLateCopy = resolve;
+  });
+click('#share');
+click('[data-enchant="mending"][data-level="1"]');
+resolveLateCopy();
+await tick();
+check(!$('#notice').textContent, 'A late clipboard success cannot announce a stale setup');
+clipboard.writeText = async () => {
+  throw new Error('Permission denied');
+};
+click('#share');
+await tick();
+check(
+  $('#share-dialog').open && !$('#copy-share').disabled,
+  'The current setup still offers manual copying when permission is denied'
+);
+clipboard.writeText = () =>
+  new Promise((resolve, reject) => {
+    rejectLateCopy = reject;
+  });
+click('#copy-share');
+check($('#copy-share').disabled, 'Manual copying blocks duplicate requests until it finishes');
+click('#close-share');
+await tick();
+const closedFeedback = $('#share-feedback').textContent;
+rejectLateCopy(new Error('Clipboard denied'));
+await tick();
+check(
+  !$('#share-dialog').open &&
+    !$('#copy-share').disabled &&
+    $('#share-feedback').textContent === closedFeedback,
+  'Closing the popup ignores a late copy failure and restores the button'
+);
+clipboard.writeText = originalWrite;
+click('#reset');
+localStorage.setItem('anvil-studio-session', savedFeatureSession);
+
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.
 click('[data-edition="bedrock"]');
 change('#item', 'shield');

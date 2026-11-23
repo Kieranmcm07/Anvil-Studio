@@ -271,7 +271,14 @@ document.querySelectorAll('[data-edition]').forEach((b) =>
 );
 $('#version').addEventListener('change', (e) => {
   state.version = e.target.value;
-  if (!itemsFor(profile()).some((i) => i[0] === state.item)) state.item = 'helmet';
+  if (!itemsFor(profile()).some((i) => i[0] === state.item)) {
+    // A fallback helmet is a different item, so don't carry over its anvil history.
+    state.item = 'helmet';
+    state.selected = {};
+    state.existing = {};
+    state.itemUses = 0;
+    $('#search').value = '';
+  }
   cleanSelections();
   invalidate();
   renderControls();
@@ -314,7 +321,7 @@ $('#existing-enchantments').addEventListener('click', (event) => {
 });
 $('#enchantments').addEventListener('click', (e) => {
   const b = e.target.closest('[data-enchant]');
-  if (!b) return;
+  if (!b || b.disabled) return;
   const id = b.dataset.enchant,
     level = Number(b.dataset.level);
   if (state.selected[id]?.level === level) delete state.selected[id];
@@ -328,6 +335,10 @@ $('#enchantments').addEventListener('click', (e) => {
     };
   invalidate();
   renderEnchantments();
+  // Rebuilding the rows replaces the button that held keyboard focus.
+  document
+    .querySelector('[data-enchant="' + id + '"][data-level="' + level + '"]')
+    ?.focus({ preventScroll: true });
 });
 function updateBookUses(e) {
   const book = state.selected[e.target.dataset.bookUses];

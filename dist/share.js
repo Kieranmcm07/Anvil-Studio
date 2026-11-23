@@ -116,10 +116,27 @@ export function setupSharing(getState, getRaw, notify) {
   const dialog = document.querySelector('#share-dialog');
   const field = document.querySelector('#share-url');
   const feedback = document.querySelector('#share-feedback');
+  const copyButton = document.querySelector('#copy-share');
+  let pendingShare = null;
+  let copyAttempt = 0;
+
   async function copy(url) {
     if (!window.navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
     await window.navigator.clipboard.writeText(url);
   }
+  function matchesSetup(url) {
+    try {
+      return url === createShareUrl(getState());
+    } catch {
+      return false;
+    }
+  }
+  // Clipboard permissions and native share sheets can resolve after a reset.
+  // An old request must never reopen its popup over a different setup.
+  document.addEventListener('planchange', () => {
+    if (pendingShare && !matchesSetup(pendingShare.url)) pendingShare = null;
+    if (dialog.open && !matchesSetup(field.value)) dialog.close();
+  });
   document.querySelector('#share').addEventListener('click', async () => {
     let url;
     try {
@@ -129,35 +146,53 @@ export function setupSharing(getState, getRaw, notify) {
       notify('Choose valid enchantments and prior-work counts before sharing.', 'error');
       return;
     }
+    if (pendingShare?.url === url) return;
+    const request = { url };
+    pendingShare = request;
+    const isCurrent = () => pendingShare === request && matchesSetup(url);
     try {
       if (window.matchMedia('(pointer: coarse)').matches && window.navigator.share) {
         await window.navigator.share({ title: 'Anvil Studio enchantment plan', url });
       } else {
         await copy(url);
-        notify('Link copied. It opens this setup, ready to calculate.', 'saved');
+        if (isCurrent()) notify('Link copied. It opens this setup, ready to calculate.', 'saved');
       }
     } catch (error) {
-      if (error.name === 'AbortError') return;
+      if (error?.name === 'AbortError' || !isCurrent()) return;
       field.value = url;
       feedback.textContent = 'Copy this link to share your setup.';
-      dialog.showModal();
+      if (!dialog.open) dialog.showModal();
       reveal(dialog);
       playSound('open');
       field.focus();
       field.select();
+    } finally {
+      if (pendingShare === request) pendingShare = null;
     }
   });
-  document.querySelector('#copy-share').addEventListener('click', async () => {
+  copyButton.addEventListener('click', async () => {
+    const attempt = ++copyAttempt;
+    const url = field.value;
+    const isCurrent = () => attempt === copyAttempt && dialog.open && field.value === url;
+    copyButton.disabled = true;
     try {
-      await copy(field.value);
+      await copy(url);
+      if (!isCurrent()) return;
       feedback.textContent = 'Link copied.';
       playSound('saved');
     } catch {
+      if (!isCurrent()) return;
       field.focus();
       field.select();
       feedback.textContent = 'Select and copy the link above.';
       playSound('error');
+    } finally {
+      if (attempt === copyAttempt) copyButton.disabled = false;
     }
+  });
+  dialog.addEventListener('close', () => {
+    copyAttempt++;
+    copyButton.disabled = false;
   });
   document.querySelector('#close-share').addEventListener('click', () => dialog.close());
 }
