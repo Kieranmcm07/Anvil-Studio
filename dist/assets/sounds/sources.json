@@ -28,5 +28,35 @@
     "url": "https://resources.download.minecraft.net/21/2106f2509f5c64a2e7d26990295d6162a8f6026a",
     "sha1": "2106f2509f5c64a2e7d26990295d6162a8f6026a",
     "original": "minecraft/sounds/block/chiseled_bookshelf/insert_enchanted1.ogg"
+  },
+  "error": {
+    "url": "https://resources.download.minecraft.net/e2/e28d844995368de1d45c724a5d371c9952ae5ed4",
+    "sha1": "e28d844995368de1d45c724a5d371c9952ae5ed4",
+    "original": "minecraft/sounds/note/bass.ogg"
+  },
+  "open": {
+    "url": "https://resources.download.minecraft.net/1b/1bdb9e214a7833b794b1b4b97796d9f9af12bca5",
+    "sha1": "1bdb9e214a7833b794b1b4b97796d9f9af12bca5",
+    "original": "minecraft/sounds/ui/toast/in.ogg"
+  },
+  "close": {
+    "url": "https://resources.download.minecraft.net/16/167a4f93c12d2d03d9ce266b8cb67065281bd218",
+    "sha1": "167a4f93c12d2d03d9ce266b8cb67065281bd218",
+    "original": "minecraft/sounds/ui/toast/out.ogg"
+  },
+  "reset": {
+    "url": "https://resources.download.minecraft.net/03/035df7547acd8451e76b4f26fc01db3baeb6d006",
+    "sha1": "035df7547acd8451e76b4f26fc01db3baeb6d006",
+    "original": "minecraft/sounds/block/grindstone/grindstone1.ogg"
+  },
+  "equip": {
+    "url": "https://resources.download.minecraft.net/54/548b24e7e67c0f0fd9d995a9539559e13ab18930",
+    "sha1": "548b24e7e67c0f0fd9d995a9539559e13ab18930",
+    "original": "minecraft/sounds/item/armor/equip_diamond1.ogg"
+  },
+  "saved": {
+    "url": "https://resources.download.minecraft.net/8f/8f45b5faf6dfae2065846d26612f7552b73640dd",
+    "sha1": "8f45b5faf6dfae2065846d26612f7552b73640dd",
+    "original": "minecraft/sounds/random/pop.ogg"
   }
 }

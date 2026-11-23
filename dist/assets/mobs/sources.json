@@ -38,5 +38,17 @@
   "dolphin": {
     "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/DOLPHIN.png",
     "sha256": "9f2e4a7b7c05f06a639a676aa9ed37eec736ed562ceebc12abe8bc056d944ac6"
+  },
+  "allay": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/ALLAY.png",
+    "sha256": "282577d6ac51429a791bef3f2e3dfcbdda2a262a7e4066dde0079b12ae7b3d7d"
+  },
+  "villager": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/VILLAGER.png",
+    "sha256": "cc92f28b12d968da3594be00d1865438c415e040df5280c55be307b42816f313"
+  },
+  "turtle": {
+    "source": "https://raw.githubusercontent.com/Owen1212055/mc-assets/271a000189e86e101a1361af6d4266f6201ff726/entity-assets/isometric/TURTLE.png",
+    "sha256": "660e4e403e211a77ed5a1f813caca77d4b9666b4b304d236327a4fb218e8cc10"
   }
 }

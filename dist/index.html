@@ -455,7 +455,10 @@
             <div id="gear-icon" class="gear-icon"></div>
             <div>
               <h3 id="gear-name">Helmet</h3>
-              <span id="gear-summary">Choose your enchantments</span>
+              <span id="gear-summary"
+                ><span id="gear-count">0</span
+                ><span id="gear-description"> enchantments selected</span></span
+              >
             </div>
           </div>
           <section id="existing-panel" class="existing-panel">
@@ -738,7 +741,15 @@
     </footer>
     <dialog id="existing-dialog" class="existing-dialog" aria-labelledby="existing-title">
       <div class="dialog-header">
-        <h2 id="existing-title">What’s already on your item?</h2>
+        <h2 id="existing-title" class="mob-heading">
+          <img
+            class="dialog-mob"
+            data-dialog-mob="./assets/mobs/allay.png"
+            width="50"
+            height="60"
+            alt=""
+          />What’s already on your item?
+        </h2>
         <button id="close-existing" type="button">Done</button>
       </div>
       <p>Choose the levels already on your gear. Tap a selected level again to remove it.</p>
@@ -762,7 +773,15 @@
         <span class="eyebrow">ANVIL STUDIO</span
         ><button id="close-help" class="icon-button" aria-label="Close help">×</button>
       </div>
-      <h2>Three steps to better gear</h2>
+      <h2 class="mob-heading">
+        <img
+          class="dialog-mob"
+          data-dialog-mob="./assets/mobs/villager.png"
+          width="50"
+          height="60"
+          alt=""
+        />Three steps to better gear
+      </h2>
       <ol class="help-steps">
         <li>
           <img
@@ -967,7 +986,15 @@
       </p>
     </dialog>
     <dialog id="share-dialog" class="share-dialog" aria-labelledby="share-title">
-      <h2 id="share-title">Share this setup</h2>
+      <h2 class="mob-heading" id="share-title">
+        <img
+          class="dialog-mob"
+          data-dialog-mob="./assets/mobs/turtle.png"
+          width="56"
+          height="50"
+          alt=""
+        />Share this setup
+      </h2>
       <p>
         Edition, version, existing gear enchantments and book levels are included. Checked steps are
         private to this device.

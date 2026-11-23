@@ -1,3 +1,5 @@
+import { playSound } from './sounds.js';
+import { reveal } from './motion.js';
 import { buildRequest } from './planner-model.js';
 import { PROFILES, itemsFor, enchantsFor, conflicts, minimumBookUses } from './data.js';
 
@@ -124,7 +126,7 @@ export function setupSharing(getState, getRaw, notify) {
       url = createShareUrl(getState());
       readSharedPlan(new URL(url).hash, getRaw());
     } catch {
-      notify('Choose valid enchantments and prior-work counts before sharing.');
+      notify('Choose valid enchantments and prior-work counts before sharing.', 'error');
       return;
     }
     try {
@@ -132,13 +134,15 @@ export function setupSharing(getState, getRaw, notify) {
         await window.navigator.share({ title: 'Anvil Studio enchantment plan', url });
       } else {
         await copy(url);
-        notify('Link copied. It opens this setup, ready to calculate.');
+        notify('Link copied. It opens this setup, ready to calculate.', 'saved');
       }
     } catch (error) {
       if (error.name === 'AbortError') return;
       field.value = url;
       feedback.textContent = 'Copy this link to share your setup.';
       dialog.showModal();
+      reveal(dialog);
+      playSound('open');
       field.focus();
       field.select();
     }
@@ -147,10 +151,12 @@ export function setupSharing(getState, getRaw, notify) {
     try {
       await copy(field.value);
       feedback.textContent = 'Link copied.';
+      playSound('saved');
     } catch {
       field.focus();
       field.select();
       feedback.textContent = 'Select and copy the link above.';
+      playSound('error');
     }
   });
   document.querySelector('#close-share').addEventListener('click', () => dialog.close());

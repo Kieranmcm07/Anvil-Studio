@@ -63,3 +63,10 @@ The optional page-opening and enchanted-bookshelf sounds are original Mojang
 recordings from the same asset index. They play quietly when opening panels,
 saving comparisons and marking a book as gathered. Source URLs and hashes
 are included in sounds/sources.json.
+
+The interface also uses original note-block bass, toast open/close, grindstone,
+diamond-armour equip and item-pop recordings from that index. They provide quiet
+feedback for errors, panels, reset, recommendations, theme changes and saved files.
+
+The Allay, villager and turtle popup illustrations use the same pinned native mob
+render source as the theme backgrounds; their URLs and hashes are in mobs/sources.json.

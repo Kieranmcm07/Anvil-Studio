@@ -56,7 +56,9 @@ between steps, or choose **Full tree** to explore the whole plan.
 - Shows themed item tooltips and downloads item cards with your theme, its mob and scenery.
 - Includes five themes: Forest, Amethyst, Ocean, Ember and Overworld.
 - Uses Minecraft item artwork, with separate mob scenes, fireflies, crystals, bubbles and embers.
-- Animates the heading and plan totals, with a switch to turn motion off.
+- Animates the heading, selected count and plan totals, with a switch to turn motion off.
+- Fades old plans away after edits and counts totals down when you reset.
+- Uses quiet Minecraft sounds for panels, books, errors, reset and successful saves.
 - Adapts to phones and tablets, with a readable graph for each step and an optional full tree.
 - Remembers your theme and animation setting. Each visit starts with a fresh planner.
 

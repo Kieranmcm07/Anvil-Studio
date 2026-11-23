@@ -42,11 +42,32 @@ function tween(element, from, value, draw, finish = () => {}) {
   counter.frame = window.requestAnimationFrame(update);
 }
 
-export function clearStat(element) {
+export function clearStat(element, { countdown = false } = {}) {
+  if (countdown && element.classList.contains('is-clearing') && active.has(element)) return;
+  // Invalidate the result now. Reset may finish its visual countdown afterwards.
+  const number = element.querySelector('.stat-value');
+  const from = Number(number?.textContent) || 0;
   stop(element);
   delete element.dataset.value;
-  element.classList.remove('is-clearing');
-  element.textContent = '-';
+  const finish = () => {
+    element.classList.remove('is-clearing');
+    element.textContent = '-';
+  };
+  if (!countdown || !number || from === 0 || !motionEnabled()) {
+    finish();
+    return;
+  }
+  element.classList.add('is-clearing');
+  element.querySelector('.sr-only').textContent = 'No plan';
+  tween(
+    element,
+    from,
+    0,
+    (value) => {
+      number.textContent = String(value);
+    },
+    finish
+  );
 }
 
 export function setStat(element, value, unit = '') {
@@ -76,18 +97,34 @@ export function setStat(element, value, unit = '') {
 
 // Small counts stay readable: update the answer immediately and bounce only when it changes.
 const countAnimations = new WeakMap();
-export function updateCount(element, text) {
+export function updateCount(element, text, { roll = false } = {}) {
   if (element.textContent === text) return;
   const hadValue = element.textContent !== '';
+  const direction = Number(text) >= Number(element.textContent) ? 1 : -1;
   element.textContent = text;
   countAnimations.get(element)?.cancel();
+  countAnimations.delete(element);
+  active.delete(element);
   if (!hadValue || !motionEnabled() || !element.animate) return;
   const animation = element.animate(
-    [
-      { transform: 'translateY(0)' },
-      { transform: 'translateY(-4px)', offset: 0.4 },
-      { transform: 'translateY(0)' },
-    ],
+    roll
+      ? [
+          {
+            opacity: 0.25,
+            transform:
+              'perspective(100px) rotateX(' +
+              -65 * direction +
+              'deg) translateY(' +
+              5 * direction +
+              'px)',
+          },
+          { opacity: 1, transform: 'perspective(100px) rotateX(0deg) translateY(0)' },
+        ]
+      : [
+          { transform: 'translateY(0)' },
+          { transform: 'translateY(-4px)', offset: 0.4 },
+          { transform: 'translateY(0)' },
+        ],
     { duration: 500, easing: 'ease-in-out' }
   );
   countAnimations.set(element, animation);

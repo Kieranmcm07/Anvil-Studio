@@ -138,10 +138,13 @@ function renderEnchantments() {
     Object.entries(state.existing).map(([id, level]) => ({ id, level }))
   );
 }
-function notice(message) {
+function notice(message, sound = null) {
   $('#notice').textContent = message;
   $('#notice').hidden = !message;
-  if (message) reveal($('#notice'));
+  if (message) {
+    reveal($('#notice'));
+    if (sound) playSound(sound);
+  }
 }
 function invalidate(message = '', options = {}) {
   worker?.terminate();
@@ -149,7 +152,7 @@ function invalidate(message = '', options = {}) {
   clearPlan(options);
   $('#calculate').disabled = false;
   $('#calculate').firstElementChild.textContent = 'Show my steps';
-  notice(message);
+  notice(message, options.sound);
 }
 function applyPreset() {
   state.selected = {};
@@ -189,7 +192,7 @@ function calculate({ progress, quiet = false } = {}) {
   try {
     request = buildRequest(state, raw);
   } catch (error) {
-    notice(error.message);
+    notice(error.message, 'error');
     return;
   }
   notice('');
@@ -203,7 +206,9 @@ function calculate({ progress, quiet = false } = {}) {
     job = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
   } catch {
     worker = null;
-    invalidate('The calculator could not start. Refresh the page and try again.');
+    invalidate('The calculator could not start. Refresh the page and try again.', {
+      sound: 'error',
+    });
     return;
   }
   worker = job;
@@ -214,12 +219,13 @@ function calculate({ progress, quiet = false } = {}) {
     $('#calculate').disabled = false;
     $('#calculate').firstElementChild.textContent = 'Show my steps';
     if (data.error) {
-      invalidate(data.error);
+      invalidate(data.error, { sound: 'error' });
       return;
     }
     if (!data.result) {
       invalidate(
-        'No survival-safe order exists for these inputs. Try fewer enchantments or use an item/books with lower prior-work counts.'
+        'No survival-safe order exists for these inputs. Try fewer enchantments or use an item/books with lower prior-work counts.',
+        { sound: 'error' }
       );
       return;
     }
@@ -238,9 +244,19 @@ function calculate({ progress, quiet = false } = {}) {
     if (worker !== job) return;
     job.terminate();
     worker = null;
-    invalidate('The calculator could not start. Refresh the page and try again.');
+    invalidate('The calculator could not start. Refresh the page and try again.', {
+      sound: 'error',
+    });
   };
-  job.postMessage(request);
+  try {
+    job.postMessage(request);
+  } catch {
+    job.terminate();
+    worker = null;
+    invalidate('The calculator could not start. Refresh the page and try again.', {
+      sound: 'error',
+    });
+  }
 }
 
 document.querySelectorAll('[data-edition]').forEach((b) =>
@@ -419,7 +435,10 @@ $('#resume-plan').addEventListener('click', () => {
   const saved = readSession(raw);
   if (!saved) {
     $('#resume-banner').hidden = true;
-    notice('That saved plan is no longer available. Choose your enchantments to start again.');
+    notice(
+      'That saved plan is no longer available. Choose your enchantments to start again.',
+      'error'
+    );
     return;
   }
   state = saved.state;
@@ -476,7 +495,7 @@ function loadSharedSetup() {
     invalidate('Shared setup loaded. Click “Show my steps” when you’re ready.');
     renderControls();
   } catch (error) {
-    notice(error.message);
+    notice(error.message, 'error');
   }
 }
 window.addEventListener('hashchange', loadSharedSetup);

@@ -73,9 +73,10 @@ export function optimize({
     gearSums[mask] =
       gearSums[mask ^ bit] + (b ? (finish - (edition === 'bedrock' ? start : 0)) * b.cost : 0);
   }
-  const better = (a, b) =>
-    !b ||
-    (objective === 'xp' ? a.xp - b.xp || a.total - b.total : a.total - b.total || a.xp - b.xp) < 0;
+  // Most candidate trees are discarded. Compare numbers before allocating a node.
+  const better = (total, xp, old) =>
+    !old ||
+    (objective === 'xp' ? xp - old.xp || total - old.total : total - old.total || xp - old.xp) < 0;
   for (let i = 0; i < n; i++) {
     const b = bookOnly ? books[i] : i ? books[i - 1] : null,
       uses = b ? b.uses : itemUses;
@@ -112,7 +113,7 @@ export function optimize({
           const total = a.total + b.total + cost,
             xp = a.xp + b.xp + xpForLevel(cost);
           const old = states[uses];
-          if (better({ total, xp }, old))
+          if (better(total, xp, old))
             states[uses] = {
               mask,
               uses,

@@ -1,3 +1,4 @@
+import { playSound } from './sounds.js';
 import { itemName, itemIcon, nameOf, enchantsFor, conflicts, minimumBookUses } from './data.js';
 import { $, escape, gearIcon, enchantLabel } from './ui.js';
 import { nodeEnchantments, buildRequest } from './planner-model.js';
@@ -412,8 +413,10 @@ export function setupPlannerTools(loadBuild, getRaw = () => ({})) {
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
       $('#item-card-status').textContent = 'Your PNG is ready.';
+      playSound('saved');
     } catch (error) {
       $('#item-card-status').textContent = error.message;
+      playSound('error');
     } finally {
       button.disabled = false;
     }

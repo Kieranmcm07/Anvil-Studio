@@ -67,10 +67,12 @@ function check(value, message) {
 }
 
 const playedSounds = [];
+const constructedSounds = [];
 const soundVolumes = [];
 let pausedSounds = 0;
 window.Audio = class {
   constructor(src) {
+    constructedSounds.push(src);
     this.src = src;
   }
   play() {
@@ -627,7 +629,8 @@ for (const selector of [
   const before = playedSounds.length;
   click(selector);
   check(
-    playedSounds.length === before + 1 && playedSounds.at(-1).endsWith('/click.ogg'),
+    playedSounds.length === before + 1 &&
+      playedSounds.at(-1).endsWith(selector === '#sources-button' ? '/open.ogg' : '/click.ogg'),
     selector + ': activation plays one click'
   );
 }
@@ -961,6 +964,35 @@ check(
 clearStat(counter);
 finishCounters();
 check(counter.textContent === '-', 'Finishing animations preserves an empty hyphen');
+setStat(counter, 40);
+finishCounters();
+clearStat(counter, { countdown: true });
+check(
+  !counter.dataset.value && counter.querySelector('.stat-value').textContent === '40',
+  'Reset invalidates the answer immediately but keeps a visual countdown'
+);
+advance(5000);
+advance(5450);
+check(
+  counter.querySelector('.stat-value').textContent === '20',
+  'Reset counts down through intermediate values'
+);
+const resetFrame = [...frames.values()][0];
+clearStat(counter, { countdown: true });
+check([...frames.values()][0] === resetFrame, 'Repeated Reset does not restart its countdown');
+advance(5900);
+check(counter.textContent === '-' && frames.size === 0, 'Reset settles on a hyphen');
+setStat(counter, 40);
+finishCounters();
+clearStat(counter, { countdown: true });
+const interruptedReset = [...frames.values()][0];
+setStat(counter, 6);
+finishCounters();
+interruptedReset(7000);
+check(
+  counter.querySelector('.stat-value').textContent === '6',
+  'An old reset cannot clear a fresh result'
+);
 setStat(counter, 30);
 click('#theme-motion');
 check(
@@ -972,6 +1004,8 @@ check(
   counter.querySelector('.stat-value').textContent === '7' && frames.size === 0,
   'Motion-off results appear immediately'
 );
+clearStat(counter, { countdown: true });
+check(counter.textContent === '-' && frames.size === 0, 'Motion-off Reset clears instantly');
 click('#theme-motion');
 setStat(counter, 0);
 finishCounters();
@@ -1003,6 +1037,36 @@ click('#calculate');
 await tick();
 finishCounters();
 check(hasPlan(), 'The edited selection can calculate a fresh plan');
+const stepView = $('#steps-view');
+const realStepBounds = stepView.getBoundingClientRect;
+stepView.getBoundingClientRect = () => ({ top: 100, left: 100, width: 800, height: 500 });
+click('#reset');
+check(
+  $('.departing-plan')?.inert && $('.departing-plan').getAttribute('aria-hidden') === 'true',
+  'Reset leaves only an inert decorative copy for its exit animation'
+);
+check(
+  !$('.departing-plan [id]') && !$('.departing-plan [data-complete]'),
+  'Outgoing plans cannot duplicate IDs or activate old controls'
+);
+check(
+  $('#stat-total').classList.contains('is-clearing') && $('#export').disabled,
+  'Reset uses the countdown without keeping a valid plan'
+);
+click('#preset');
+click('#calculate');
+await tick();
+finishCounters();
+check(!$('.departing-plan') && hasPlan(), 'A fresh result removes unfinished exit animations');
+click('[data-enchant="mending"][data-level="1"]');
+check(
+  $('.departing-plan') && $('#stat-total').textContent === '-',
+  'Enchantment edits animate the old plan away and clear totals immediately'
+);
+const { finishDepartures } = await import('../dist/motion.js');
+finishDepartures();
+check(!$('.departing-plan'), 'Finishing transitions cleans up the outgoing plan');
+stepView.getBoundingClientRect = realStepBounds;
 
 window.requestAnimationFrame = requestFrame;
 window.cancelAnimationFrame = cancelFrame;
@@ -1086,6 +1150,18 @@ click('#calculate');
 check(
   !$('#calculate').disabled && $('#notice').textContent.includes('could not start'),
   'A blocked worker leaves a usable calculate button and an error message'
+);
+globalThis.Worker = class extends WorkingWorker {
+  postMessage() {
+    throw new Error('Posting blocked');
+  }
+};
+click('#calculate');
+check(
+  workerJobs.at(-1).terminated &&
+    !$('#calculate').disabled &&
+    $('#notice').textContent.includes('could not start'),
+  'Posting failures terminate the worker and restore the calculate button'
 );
 globalThis.Worker = WorkingWorker;
 deferWorkers = false;
@@ -1330,6 +1406,7 @@ const trackDownload = (event) => {
 };
 document.addEventListener('click', trackDownload, true);
 click('#item-card');
+const beforeCardSound = playedSounds.length;
 click('#download-item-card');
 await tick();
 await tick();
@@ -1339,6 +1416,11 @@ check(
   'PNG download uses the final item enchantments'
 );
 check(!$('#download-item-card').disabled, 'PNG export restores its button after completion');
+check(
+  playedSounds.length === beforeCardSound + 1 && playedSounds.at(-1).endsWith('/saved.ogg'),
+  'A PNG download plays only its success sound, without a second synthetic link click'
+);
+
 check(
   drawCalls.some(([kind, image]) => kind === 'image' && image.url?.endsWith('/fox.png')) &&
     drawCalls.some(
@@ -1396,6 +1478,73 @@ check(
 );
 click('#reset');
 click('#sound-enabled');
+localStorage.setItem('anvil-studio-session', savedFeatureSession);
+
+// Contextual sounds and rolling counts stay optional and do not change the inputs.
+click('#sound-enabled');
+let beforeFeedback = playedSounds.length;
+click('#calculate');
+check(
+  playedSounds.length === beforeFeedback + 1 && playedSounds.at(-1).endsWith('/error.ogg'),
+  'Invalid calculations play one quiet note-block error'
+);
+const gearCounter = $('#gear-count');
+const realGearAnimate = gearCounter.animate.bind(gearCounter);
+let rolls = 0;
+gearCounter.animate = (...args) => {
+  if (args[0][0].transform.includes('rotateX')) rolls++;
+  return realGearAnimate(...args);
+};
+click('#preset');
+check(
+  playedSounds.at(-1).endsWith('/equip.ogg') &&
+    rolls === 1 &&
+    gearCounter.textContent === $('#selection-count').textContent,
+  'Recommendations equip with sound and roll the gear count'
+);
+beforeFeedback = playedSounds.length;
+click('[data-enchant="mending"][data-level="1"]');
+check(
+  playedSounds.length === beforeFeedback + 1 &&
+    playedSounds.at(-1).endsWith('/page.ogg') &&
+    rolls === 2,
+  'Removing an enchantment plays one page sound and rolls the gear count'
+);
+click('[data-enchant="mending"][data-level="1"]');
+check(
+  playedSounds.at(-1).endsWith('/book.ogg') && rolls === 3,
+  'Adding an enchantment plays a book sound and rolls the count'
+);
+click('#help-button');
+await tick();
+check(
+  playedSounds.at(-1).endsWith('/open.ogg') &&
+    $('#help .dialog-mob').getAttribute('src').endsWith('/villager.png'),
+  'The help popup opens with sound and lazy-loads its villager'
+);
+click('#close-help');
+check(playedSounds.at(-1).endsWith('/close.ogg'), 'Closing a popup uses its own sound');
+click('#edit-existing');
+await tick();
+check(
+  $('#existing-dialog .dialog-mob').getAttribute('src').endsWith('/allay.png'),
+  'The existing-item editor loads its Allay'
+);
+click('#close-existing');
+check(
+  constructedSounds.length === new Set(constructedSounds).size,
+  'Each recording reuses one audio object'
+);
+click('#sound-enabled');
+beforeFeedback = playedSounds.length;
+click('#reset');
+check(playedSounds.length === beforeFeedback, 'New sounds also respect mute');
+click('#theme-motion');
+click('#preset');
+check(rolls === 4, 'Reduced-motion selection changes do not start more rolls');
+click('#theme-motion');
+gearCounter.animate = realGearAnimate;
+click('#reset');
 localStorage.setItem('anvil-studio-session', savedFeatureSession);
 
 // Load a fresh app module with saved inputs to exercise returning-visitor startup.

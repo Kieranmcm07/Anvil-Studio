@@ -1,7 +1,22 @@
 import { nudgeNumber } from './motion.js';
 
 const STORAGE_KEY = 'anvil-studio-sound';
-const volumes = { click: 0.18, step: 0.12, enchant: 0.2, levelup: 0.18, page: 0.12, book: 0.12 };
+const volumes = {
+  click: 0.18,
+  step: 0.12,
+  enchant: 0.2,
+  levelup: 0.18,
+  page: 0.12,
+  book: 0.12,
+  error: 0.14,
+  open: 0.12,
+  close: 0.1,
+  reset: 0.08,
+  equip: 0.16,
+  saved: 0.13,
+};
+// Reuse recordings instead of allocating a new audio element on every click.
+const recordings = new Map();
 let enabled = false;
 let current = null;
 
@@ -9,8 +24,15 @@ export function playSound(name) {
   if (!enabled || !Object.hasOwn(volumes, name)) return;
   try {
     current?.pause();
-    current = new window.Audio(new URL('./assets/sounds/' + name + '.ogg', import.meta.url).href);
-    current.volume = volumes[name];
+    if (!recordings.has(name)) {
+      const audio = new window.Audio(
+        new URL('./assets/sounds/' + name + '.ogg', import.meta.url).href
+      );
+      audio.volume = volumes[name];
+      recordings.set(name, audio);
+    }
+    current = recordings.get(name);
+    current.currentTime = 0;
     current.play()?.catch(() => {}); // A blocked sound never interrupts the planner.
   } catch {}
 }
@@ -24,10 +46,13 @@ export function setupSounds() {
     .querySelectorAll(numberSelector)
     .forEach((input) => numberValues.set(input, input.value));
   function controlClick(control, sound = 'click') {
-    // Focus and click can describe the same text-field activation.
-    const now = Date.now();
-    if (now - (controlTimes.get(control) ?? -Infinity) < 90) return;
-    controlTimes.set(control, now);
+    // Only text fields emit both focus and click for one activation.
+    // Real button presses should still sound when the user clicks quickly.
+    if (control.matches('input[type="search"], input[type="text"], textarea')) {
+      const now = Date.now();
+      if (now - (controlTimes.get(control) ?? -Infinity) < 90) return;
+      controlTimes.set(control, now);
+    }
     playSound(sound);
   }
   try {
@@ -63,14 +88,27 @@ export function setupSounds() {
         control.getAttribute('aria-pressed') === 'true'
       )
         return;
-      const sound = control.matches(
-        '#steps-tab, #flow-tab, #help-button, #edit-existing, #item-card'
-      )
-        ? 'page'
-        : control.matches('#capture-a, #capture-b')
-          ? 'book'
-          : 'click';
+      // Copy/download feedback is played on success, not before the action finishes.
+      if (control.matches('#share, #copy-share, #download-item-card, a[download]')) return;
+      let sound = 'click';
+      if (control.matches('#reset')) sound = 'reset';
+      else if (control.matches('#preset, [data-theme-choice]')) sound = 'equip';
+      else if (control.matches('#help-button, #sources-button, #edit-existing')) sound = 'open';
+      else if (control.matches('#close-help, #close-existing, #close-item-card, #close-share'))
+        sound = 'close';
+      else if (control.matches('#steps-tab, #flow-tab, #item-card')) sound = 'page';
+      else if (control.matches('#capture-a, #capture-b')) sound = 'book';
+      else if (control.matches('[data-enchant], [data-existing]'))
+        sound = control.getAttribute('aria-pressed') === 'true' ? 'page' : 'book';
+      else if (control.matches('summary')) sound = control.parentElement.open ? 'close' : 'open';
       controlClick(control, sound);
+    },
+    true
+  );
+  document.addEventListener(
+    'cancel',
+    (event) => {
+      if (event.target.tagName === 'DIALOG') playSound('close');
     },
     true
   );

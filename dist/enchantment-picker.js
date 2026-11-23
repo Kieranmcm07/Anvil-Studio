@@ -106,8 +106,9 @@ export function renderPicker(enchantments, state, profile, raw) {
   const count = Object.keys(state.selected).length;
   const edition = profile.edition === 'java' ? 'Java' : 'Bedrock';
   updateCount($('#selection-count'), String(count));
-  $('#gear-summary').textContent =
-    `${count} enchantment${count === 1 ? '' : 's'} selected · ${edition} ${profile.label}`;
+  updateCount($('#gear-count'), String(count), { roll: true });
+  $('#gear-description').textContent =
+    ` enchantment${count === 1 ? '' : 's'} selected · ${edition} ${profile.label}`;
 
   const visible = enchantments.filter(
     (enchantment) =>

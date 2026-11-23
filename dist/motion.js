@@ -27,7 +27,56 @@ export function reveal(element, { fadeOnly = false, duration = 260 } = {}) {
   }
 }
 
+// Keep the outgoing plan as a non-interactive picture while the real DOM updates.
+const departures = new Map();
+export function finishDepartures() {
+  for (const [element, { animation, picture }] of departures) {
+    animation.cancel();
+    picture.remove();
+    departures.delete(element);
+  }
+}
+export function depart(element) {
+  finishDepartures();
+  if (!element || element.hidden || !motionEnabled() || !element.animate) return;
+  const host = element.parentElement;
+  const rect = element.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const bounds = host.getBoundingClientRect();
+  const picture = element.cloneNode(true);
+  for (const node of [picture, ...picture.querySelectorAll('*')]) {
+    for (const attr of [...node.attributes])
+      if (attr.name === 'id' || attr.name.startsWith('data-') || attr.name === 'name')
+        node.removeAttribute(attr.name);
+  }
+  picture.inert = true;
+  picture.setAttribute('aria-hidden', 'true');
+  picture.classList.add('departing-plan');
+  Object.assign(picture.style, {
+    top: rect.top - bounds.top + host.scrollTop + 'px',
+    left: rect.left - bounds.left + 'px',
+    width: rect.width + 'px',
+    height: rect.height + 'px',
+  });
+  host.append(picture);
+  const animation = picture.animate(
+    [
+      { opacity: 1, transform: 'translateY(0)' },
+      { opacity: 0, transform: 'translateY(-12px)' },
+    ],
+    { duration: 260, easing: 'ease-in', fill: 'forwards' }
+  );
+  departures.set(element, { animation, picture });
+  animation.finished
+    .catch(() => {})
+    .finally(() => {
+      picture.remove();
+      if (departures.get(element)?.picture === picture) departures.delete(element);
+    });
+}
+
 export function finishReveals() {
+  finishDepartures();
   for (const animation of running) animation.finish();
 }
 function tap(element) {
@@ -56,6 +105,18 @@ export function nudgeNumber(element, direction) {
   animation.finished.catch(() => {}).finally(() => running.delete(animation));
 }
 export function setupMotion() {
+  const loadDialogMobs = (dialog) => {
+    dialog.querySelectorAll('[data-dialog-mob]').forEach((image) => {
+      if (!image.getAttribute('src')) image.src = image.dataset.dialogMob;
+    });
+  };
+  const observer = new window.MutationObserver((changes) => {
+    for (const { target } of changes) if (target.open) loadDialogMobs(target);
+  });
+  document.querySelectorAll('dialog').forEach((dialog) => {
+    observer.observe(dialog, { attributes: true, attributeFilter: ['open'] });
+    if (dialog.open) loadDialogMobs(dialog);
+  });
   document.addEventListener('click', (event) => {
     const button = event.target.closest('#reset, #preset');
     if (button) tap(button);

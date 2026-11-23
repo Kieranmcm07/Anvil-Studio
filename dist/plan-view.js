@@ -1,7 +1,7 @@
 import { itemName, itemIcon } from './data.js';
 import { penalty } from './optimizer.js';
 import { $, escape, enchantLabel, gearIcon } from './ui.js';
-import { reveal, motionEnabled, enchantParticles } from './motion.js';
+import { reveal, motionEnabled, enchantParticles, depart, finishDepartures } from './motion.js';
 import { setStat, clearStat, updateCount } from './stats.js';
 import { playSound } from './sounds.js';
 import { itemTooltip, tooltipAttributes } from './planner-tools.js';
@@ -18,6 +18,7 @@ const completed = new Set();
 const gathered = new Set();
 
 export function showPlan(plan, settings, saved = null) {
+  finishDepartures();
   needsUpdate = false;
   result = plan;
   context = settings;
@@ -38,6 +39,8 @@ export function showPlan(plan, settings, saved = null) {
 }
 
 export function clearPlan({ fresh = false, reset = false } = {}) {
+  const hadResult = Boolean(result);
+  if (hadResult && !fresh) depart($(currentView === 'steps' ? '#steps-view' : '#flow-view'));
   needsUpdate = !fresh && !reset && (needsUpdate || Boolean(result));
   result = null;
   context = null;
@@ -45,7 +48,7 @@ export function clearPlan({ fresh = false, reset = false } = {}) {
   gathered.clear();
   emitPlan('planchange');
   for (const id of ['stat-total', 'stat-peak', 'stat-steps']) {
-    clearStat($('#' + id), { immediate: fresh });
+    clearStat($('#' + id), { countdown: reset });
   }
   $('#result-title').textContent = 'Your enchanting steps';
   $('#plan-details').hidden = true;
@@ -70,6 +73,7 @@ export function clearPlan({ fresh = false, reset = false } = {}) {
   for (const id of ['zoom-in', 'zoom-out', 'zoom-fit']) $('#' + id).disabled = true;
   $('#export').disabled = true;
   setView('steps');
+  if (hadResult && !fresh) reveal($('#steps-view'), { fadeOnly: true, duration: 340 });
 }
 
 function isEquipment(node) {
